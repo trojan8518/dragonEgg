@@ -3658,77 +3658,500 @@ var fairygui;
 })(fairygui || (fairygui = {}));
 var fairygui;
 (function (fairygui) {
-    var UIObjectFactory = (function () {
-        function UIObjectFactory() {
+    var UIPackage = (function () {
+        function UIPackage() {
+            this._items = new Array();
+            this._itemsById = {};
+            this._itemsByName = {};
+            this._sprites = {};
         }
-        UIObjectFactory.setPackageItemExtension = function (url, type) {
-            if (url == null)
-                throw "Invaild url: " + url;
-            var pi = fairygui.UIPackage.getItemByURL(url);
-            if (pi != null)
-                pi.extensionType = type;
-            UIObjectFactory.packageItemExtensions[url] = type;
+        UIPackage.getById = function (id) {
+            return UIPackage._packageInstById[id];
         };
-        UIObjectFactory.setLoaderExtension = function (type) {
-            UIObjectFactory.loaderType = type;
+        UIPackage.getByName = function (name) {
+            return UIPackage._packageInstByName[name];
         };
-        UIObjectFactory.resolvePackageItemExtension = function (pi) {
-            pi.extensionType = UIObjectFactory.packageItemExtensions["ui://" + pi.owner.id + pi.id];
-            if (!pi.extensionType)
-                pi.extensionType = UIObjectFactory.packageItemExtensions["ui://" + pi.owner.name + "/" + pi.name];
+        UIPackage.addPackage = function (resKey, descData) {
+            if (descData === void 0) { descData = null; }
+            if (!descData) {
+                descData = RES.getRes(resKey);
+                if (!descData)
+                    throw "Resource '" + resKey + "' not found, please check default.res.json!";
+            }
+            var pkg = new UIPackage();
+            pkg.loadPackage(new fairygui.ByteBuffer(descData), resKey);
+            UIPackage._packageInstById[pkg.id] = pkg;
+            UIPackage._packageInstByName[pkg.name] = pkg;
+            pkg.customId = resKey;
+            return pkg;
         };
-        UIObjectFactory.newObject = function (pi) {
-            if (pi.extensionType != null)
-                return new pi.extensionType();
+        UIPackage.removePackage = function (packageId) {
+            var pkg = UIPackage._packageInstById[packageId];
+            pkg.dispose();
+            delete UIPackage._packageInstById[pkg.id];
+            if (pkg._customId != null)
+                delete UIPackage._packageInstById[pkg._customId];
+            delete UIPackage._packageInstByName[pkg.name];
+        };
+        UIPackage.createObject = function (pkgName, resName, userClass) {
+            if (userClass === void 0) { userClass = null; }
+            var pkg = UIPackage.getByName(pkgName);
+            if (pkg)
+                return pkg.createObject(resName, userClass);
             else
-                return this.newObject2(pi.objectType);
+                return null;
         };
-        UIObjectFactory.newObject2 = function (type) {
-            switch (type) {
-                case fairygui.ObjectType.Image:
-                    return new fairygui.GImage();
-                case fairygui.ObjectType.MovieClip:
-                    return new fairygui.GMovieClip();
-                case fairygui.ObjectType.Component:
-                    return new fairygui.GComponent();
-                case fairygui.ObjectType.Text:
-                    return new fairygui.GTextField();
-                case fairygui.ObjectType.RichText:
-                    return new fairygui.GRichTextField();
-                case fairygui.ObjectType.InputText:
-                    return new fairygui.GTextInput();
-                case fairygui.ObjectType.Group:
-                    return new fairygui.GGroup();
-                case fairygui.ObjectType.List:
-                    return new fairygui.GList();
-                case fairygui.ObjectType.Graph:
-                    return new fairygui.GGraph();
-                case fairygui.ObjectType.Loader:
-                    if (UIObjectFactory.loaderType != null)
-                        return new UIObjectFactory.loaderType();
+        UIPackage.createObjectFromURL = function (url, userClass) {
+            if (userClass === void 0) { userClass = null; }
+            var pi = UIPackage.getItemByURL(url);
+            if (pi)
+                return pi.owner.internalCreateObject(pi, userClass);
+            else
+                return null;
+        };
+        UIPackage.getItemURL = function (pkgName, resName) {
+            var pkg = UIPackage.getByName(pkgName);
+            if (!pkg)
+                return null;
+            var pi = pkg._itemsByName[resName];
+            if (!pi)
+                return null;
+            return "ui://" + pkg.id + pi.id;
+        };
+        UIPackage.getItemByURL = function (url) {
+            var pos1 = url.indexOf("//");
+            if (pos1 == -1)
+                return null;
+            var pos2 = url.indexOf("/", pos1 + 2);
+            if (pos2 == -1) {
+                if (url.length > 13) {
+                    var pkgId = url.substr(5, 8);
+                    var pkg = UIPackage.getById(pkgId);
+                    if (pkg != null) {
+                        var srcId = url.substr(13);
+                        return pkg.getItemById(srcId);
+                    }
+                }
+            }
+            else {
+                var pkgName = url.substr(pos1 + 2, pos2 - pos1 - 2);
+                pkg = UIPackage.getByName(pkgName);
+                if (pkg != null) {
+                    var srcName = url.substr(pos2 + 1);
+                    return pkg.getItemByName(srcName);
+                }
+            }
+            return null;
+        };
+        UIPackage.normalizeURL = function (url) {
+            if (url == null)
+                return null;
+            var pos1 = url.indexOf("//");
+            if (pos1 == -1)
+                return null;
+            var pos2 = url.indexOf("/", pos1 + 2);
+            if (pos2 == -1)
+                return url;
+            var pkgName = url.substr(pos1 + 2, pos2 - pos1 - 2);
+            var srcName = url.substr(pos2 + 1);
+            return UIPackage.getItemURL(pkgName, srcName);
+        };
+        UIPackage.setStringsSource = function (source) {
+            fairygui.TranslationHelper.loadFromXML(source);
+        };
+        UIPackage.prototype.loadPackage = function (buffer, resKey) {
+            if (buffer.readUnsignedInt() != 0x46475549)
+                throw "FairyGUI: old package format found in '" + resKey + "'";
+            buffer.version = buffer.readInt();
+            var compressed = buffer.readBool();
+            this._id = buffer.readUTF();
+            this._name = buffer.readUTF();
+            buffer.skip(20);
+            if (compressed) {
+                var buf = new Uint8Array(buffer.buffer, buffer.position, buffer.length - buffer.position);
+                var inflater = new Zlib.RawInflate(buf);
+                buffer = new fairygui.ByteBuffer(inflater.decompress());
+            }
+            var indexTablePos = buffer.position;
+            var cnt;
+            var i;
+            var nextPos;
+            buffer.seek(indexTablePos, 4);
+            cnt = buffer.readInt();
+            var stringTable = new Array(cnt);
+            stringTable.reduceRight;
+            for (i = 0; i < cnt; i++)
+                stringTable[i] = buffer.readUTF();
+            buffer.stringTable = stringTable;
+            buffer.seek(indexTablePos, 1);
+            var pi;
+            resKey = resKey + "_";
+            cnt = buffer.readShort();
+            for (i = 0; i < cnt; i++) {
+                nextPos = buffer.readInt();
+                nextPos += buffer.position;
+                pi = new fairygui.PackageItem();
+                pi.owner = this;
+                pi.type = buffer.readByte();
+                pi.id = buffer.readS();
+                pi.name = buffer.readS();
+                buffer.readS(); //path
+                pi.file = buffer.readS();
+                buffer.readBool(); //exported
+                pi.width = buffer.readInt();
+                pi.height = buffer.readInt();
+                switch (pi.type) {
+                    case fairygui.PackageItemType.Image:
+                        {
+                            pi.objectType = fairygui.ObjectType.Image;
+                            var scaleOption = buffer.readByte();
+                            if (scaleOption == 1) {
+                                pi.scale9Grid = new egret.Rectangle();
+                                pi.scale9Grid.x = buffer.readInt();
+                                pi.scale9Grid.y = buffer.readInt();
+                                pi.scale9Grid.width = buffer.readInt();
+                                pi.scale9Grid.height = buffer.readInt();
+                                pi.tileGridIndice = buffer.readInt();
+                            }
+                            else if (scaleOption == 2)
+                                pi.scaleByTile = true;
+                            pi.smoothing = buffer.readBool();
+                            break;
+                        }
+                    case fairygui.PackageItemType.MovieClip:
+                        {
+                            pi.smoothing = buffer.readBool();
+                            pi.objectType = fairygui.ObjectType.MovieClip;
+                            pi.rawData = buffer.readBuffer();
+                            break;
+                        }
+                    case fairygui.PackageItemType.Font:
+                        {
+                            pi.rawData = buffer.readBuffer();
+                            break;
+                        }
+                    case fairygui.PackageItemType.Component:
+                        {
+                            var extension = buffer.readByte();
+                            if (extension > 0)
+                                pi.objectType = extension;
+                            else
+                                pi.objectType = fairygui.ObjectType.Component;
+                            pi.rawData = buffer.readBuffer();
+                            fairygui.UIObjectFactory.resolvePackageItemExtension(pi);
+                            break;
+                        }
+                    case fairygui.PackageItemType.Atlas:
+                    case fairygui.PackageItemType.Sound:
+                    case fairygui.PackageItemType.Misc:
+                        {
+                            pi.file = resKey + fairygui.ToolSet.getFileName(pi.file);
+                            break;
+                        }
+                }
+                this._items.push(pi);
+                this._itemsById[pi.id] = pi;
+                if (pi.name != null)
+                    this._itemsByName[pi.name] = pi;
+                buffer.position = nextPos;
+            }
+            buffer.seek(indexTablePos, 2);
+            cnt = buffer.readShort();
+            for (i = 0; i < cnt; i++) {
+                nextPos = buffer.readShort();
+                nextPos += buffer.position;
+                var itemId = buffer.readS();
+                pi = this._itemsById[buffer.readS()];
+                var sprite = new AtlasSprite();
+                sprite.atlas = pi;
+                sprite.rect.x = buffer.readInt();
+                sprite.rect.y = buffer.readInt();
+                sprite.rect.width = buffer.readInt();
+                sprite.rect.height = buffer.readInt();
+                sprite.rotated = buffer.readBool();
+                this._sprites[itemId] = sprite;
+                buffer.position = nextPos;
+            }
+            if (buffer.seek(indexTablePos, 3)) {
+                /*cnt = buffer.readShort();
+                for (i = 0; i < cnt; i++)
+                {
+                    nextPos = buffer.readInt();
+                    nextPos += buffer.position;
+                    
+                    pi = this._itemsById[buffer.readS()];
+                    if (pi && pi.type == PackageItemType.Image)
+                    {
+                        pi.pixelHitTestData = new PixelHitTestData();
+                        pi.pixelHitTestData.load(buffer);
+                    }
+                    
+                    buffer.position = nextPos;
+                }*/
+            }
+        };
+        UIPackage.prototype.dispose = function () {
+            var cnt = this._items.length;
+            for (var i = 0; i < cnt; i++) {
+                var pi = this._items[i];
+                var texture = pi.texture;
+                if (texture != null)
+                    texture.dispose();
+                else if (pi.frames != null) {
+                    var frameCount = pi.frames.length;
+                    for (var j = 0; j < frameCount; j++) {
+                        texture = pi.frames[j].texture;
+                        if (texture != null)
+                            texture.dispose();
+                    }
+                }
+            }
+        };
+        Object.defineProperty(UIPackage.prototype, "id", {
+            get: function () {
+                return this._id;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIPackage.prototype, "name", {
+            get: function () {
+                return this._name;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UIPackage.prototype, "customId", {
+            get: function () {
+                return this._customId;
+            },
+            set: function (value) {
+                if (this._customId != null)
+                    delete UIPackage._packageInstById[this._customId];
+                this._customId = value;
+                if (this._customId != null)
+                    UIPackage._packageInstById[this._customId] = this;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        UIPackage.prototype.createObject = function (resName, userClass) {
+            if (userClass === void 0) { userClass = null; }
+            var pi = this._itemsByName[resName];
+            if (pi)
+                return this.internalCreateObject(pi, userClass);
+            else
+                return null;
+        };
+        UIPackage.prototype.internalCreateObject = function (item, userClass) {
+            if (userClass === void 0) { userClass = null; }
+            var g;
+            if (item.type == fairygui.PackageItemType.Component) {
+                if (userClass != null)
+                    g = new userClass();
+                else
+                    g = fairygui.UIObjectFactory.newObject(item);
+            }
+            else
+                g = fairygui.UIObjectFactory.newObject(item);
+            if (g == null)
+                return null;
+            UIPackage._constructing++;
+            g.packageItem = item;
+            g.constructFromResource();
+            UIPackage._constructing--;
+            return g;
+        };
+        UIPackage.prototype.getItemById = function (itemId) {
+            return this._itemsById[itemId];
+        };
+        UIPackage.prototype.getItemByName = function (resName) {
+            return this._itemsByName[resName];
+        };
+        UIPackage.prototype.getItemAssetByName = function (resName) {
+            var pi = this._itemsByName[resName];
+            if (pi == null) {
+                throw "Resource not found -" + resName;
+            }
+            return this.getItemAsset(pi);
+        };
+        UIPackage.prototype.getItemAsset = function (item) {
+            switch (item.type) {
+                case fairygui.PackageItemType.Image:
+                    if (!item.decoded) {
+                        item.decoded = true;
+                        var sprite = this._sprites[item.id];
+                        if (sprite != null)
+                            item.texture = this.createSpriteTexture(sprite);
+                    }
+                    return item.texture;
+                case fairygui.PackageItemType.Atlas:
+                    if (!item.decoded) {
+                        item.decoded = true;
+                        item.texture = RES.getRes(item.file);
+                        if (!item.texture)
+                            console.log("Resource '" + item.file + "' not found, please check default.res.json!");
+                    }
+                    return item.texture;
+                case fairygui.PackageItemType.Sound:
+                    if (!item.decoded) {
+                        item.decoded = true;
+                        item.sound = RES.getRes(item.file);
+                        if (!item.sound)
+                            console.log("Resource '" + item.file + "' not found, please check default.res.json!");
+                    }
+                    return item.sound;
+                case fairygui.PackageItemType.Font:
+                    if (!item.decoded) {
+                        item.decoded = true;
+                        this.loadFont(item);
+                    }
+                    return item.bitmapFont;
+                case fairygui.PackageItemType.MovieClip:
+                    if (!item.decoded) {
+                        item.decoded = true;
+                        this.loadMovieClip(item);
+                    }
+                    return item.frames;
+                case fairygui.PackageItemType.Misc:
+                    if (item.file)
+                        return RES.getRes(item.file);
                     else
-                        return new fairygui.GLoader();
-                case fairygui.ObjectType.Button:
-                    return new fairygui.GButton();
-                case fairygui.ObjectType.Label:
-                    return new fairygui.GLabel();
-                case fairygui.ObjectType.ProgressBar:
-                    return new fairygui.GProgressBar();
-                case fairygui.ObjectType.Slider:
-                    return new fairygui.GSlider();
-                case fairygui.ObjectType.ScrollBar:
-                    return new fairygui.GScrollBar();
-                case fairygui.ObjectType.ComboBox:
-                    return new fairygui.GComboBox();
+                        return null;
                 default:
                     return null;
             }
         };
-        UIObjectFactory.packageItemExtensions = {};
-        return UIObjectFactory;
+        UIPackage.prototype.createSpriteTexture = function (sprite) {
+            var atlasTexture = this.getItemAsset(sprite.atlas);
+            if (atlasTexture == null)
+                return null;
+            else
+                return this.createSubTexture(atlasTexture, sprite.rect);
+        };
+        UIPackage.prototype.createSubTexture = function (atlasTexture, uvRect) {
+            var texture = new egret.Texture();
+            if (atlasTexture["_bitmapData"]) {
+                texture["_bitmapData"] = atlasTexture["_bitmapData"];
+                texture.$initData(atlasTexture["_bitmapX"] + uvRect.x, atlasTexture["_bitmapY"] + uvRect.y, uvRect.width, uvRect.height, 0, 0, uvRect.width, uvRect.height, atlasTexture["_sourceWidth"], atlasTexture["_sourceHeight"]);
+            }
+            else {
+                texture.bitmapData = atlasTexture.bitmapData;
+                texture.$initData(atlasTexture["$bitmapX"] + uvRect.x, atlasTexture["$bitmapY"] + uvRect.y, uvRect.width, uvRect.height, 0, 0, uvRect.width, uvRect.height, atlasTexture["$sourceWidth"], atlasTexture["$sourceHeight"]);
+            }
+            return texture;
+        };
+        UIPackage.prototype.loadMovieClip = function (item) {
+            var buffer = item.rawData;
+            buffer.seek(0, 0);
+            item.interval = buffer.readInt();
+            item.swing = buffer.readBool();
+            item.repeatDelay = buffer.readInt();
+            buffer.seek(0, 1);
+            var frameCount = buffer.readShort();
+            item.frames = Array(frameCount);
+            var spriteId;
+            var frame;
+            var sprite;
+            for (var i = 0; i < frameCount; i++) {
+                var nextPos = buffer.readShort();
+                nextPos += buffer.position;
+                frame = new fairygui.Frame();
+                frame.rect.x = buffer.readInt();
+                frame.rect.y = buffer.readInt();
+                frame.rect.width = buffer.readInt();
+                frame.rect.height = buffer.readInt();
+                frame.addDelay = buffer.readInt();
+                spriteId = buffer.readS();
+                if (spriteId != null && (sprite = this._sprites[spriteId]) != null)
+                    frame.texture = this.createSpriteTexture(sprite);
+                item.frames[i] = frame;
+                buffer.position = nextPos;
+            }
+        };
+        UIPackage.prototype.loadFont = function (item) {
+            var font = new fairygui.BitmapFont();
+            item.bitmapFont = font;
+            var buffer = item.rawData;
+            buffer.seek(0, 0);
+            font.ttf = buffer.readBool();
+            buffer.readBool(); //tint
+            font.resizable = buffer.readBool();
+            buffer.readBool(); //has channel
+            font.size = buffer.readInt();
+            var xadvance = buffer.readInt();
+            var lineHeight = buffer.readInt();
+            var mainTexture = null;
+            var mainSprite = this._sprites[item.id];
+            if (mainSprite != null)
+                mainTexture = (this.getItemAsset(mainSprite.atlas));
+            buffer.seek(0, 1);
+            var bg = null;
+            var cnt = buffer.readInt();
+            for (var i = 0; i < cnt; i++) {
+                var nextPos = buffer.readShort();
+                nextPos += buffer.position;
+                bg = new fairygui.BMGlyph();
+                var ch = buffer.readChar();
+                font.glyphs[ch] = bg;
+                var img = buffer.readS();
+                var bx = buffer.readInt();
+                var by = buffer.readInt();
+                bg.offsetX = buffer.readInt();
+                bg.offsetY = buffer.readInt();
+                bg.width = buffer.readInt();
+                bg.height = buffer.readInt();
+                bg.advance = buffer.readInt();
+                bg.channel = buffer.readByte();
+                if (bg.channel == 1)
+                    bg.channel = 3;
+                else if (bg.channel == 2)
+                    bg.channel = 2;
+                else if (bg.channel == 3)
+                    bg.channel = 1;
+                if (!font.ttf) {
+                    var charImg = this._itemsById[img];
+                    if (charImg) {
+                        this.getItemAsset(charImg);
+                        bg.width = charImg.width;
+                        bg.height = charImg.height;
+                        bg.texture = charImg.texture;
+                    }
+                }
+                else {
+                    bg.texture = this.createSubTexture(mainTexture, new egret.Rectangle(bx + mainSprite.rect.x, by + mainSprite.rect.y, bg.width, bg.height));
+                }
+                if (font.ttf)
+                    bg.lineHeight = lineHeight;
+                else {
+                    if (bg.advance == 0) {
+                        if (xadvance == 0)
+                            bg.advance = bg.offsetX + bg.width;
+                        else
+                            bg.advance = xadvance;
+                    }
+                    bg.lineHeight = bg.offsetY < 0 ? bg.height : (bg.offsetY + bg.height);
+                    if (bg.lineHeight < font.size)
+                        bg.lineHeight = font.size;
+                }
+                buffer.position = nextPos;
+            }
+        };
+        //internal
+        UIPackage._constructing = 0;
+        UIPackage._packageInstById = {};
+        UIPackage._packageInstByName = {};
+        return UIPackage;
     }());
-    fairygui.UIObjectFactory = UIObjectFactory;
-    __reflect(UIObjectFactory.prototype, "fairygui.UIObjectFactory");
+    fairygui.UIPackage = UIPackage;
+    __reflect(UIPackage.prototype, "fairygui.UIPackage");
+    var AtlasSprite = (function () {
+        function AtlasSprite() {
+            this.rect = new egret.Rectangle();
+        }
+        return AtlasSprite;
+    }());
+    __reflect(AtlasSprite.prototype, "AtlasSprite");
 })(fairygui || (fairygui = {}));
 var DebugPlatform = (function () {
     function DebugPlatform() {
@@ -12731,6 +13154,80 @@ var fairygui;
     fairygui.UIConfig = UIConfig;
     __reflect(UIConfig.prototype, "fairygui.UIConfig");
 })(fairygui || (fairygui = {}));
+var fairygui;
+(function (fairygui) {
+    var UIObjectFactory = (function () {
+        function UIObjectFactory() {
+        }
+        UIObjectFactory.setPackageItemExtension = function (url, type) {
+            if (url == null)
+                throw "Invaild url: " + url;
+            var pi = fairygui.UIPackage.getItemByURL(url);
+            if (pi != null)
+                pi.extensionType = type;
+            UIObjectFactory.packageItemExtensions[url] = type;
+        };
+        UIObjectFactory.setLoaderExtension = function (type) {
+            UIObjectFactory.loaderType = type;
+        };
+        UIObjectFactory.resolvePackageItemExtension = function (pi) {
+            pi.extensionType = UIObjectFactory.packageItemExtensions["ui://" + pi.owner.id + pi.id];
+            if (!pi.extensionType)
+                pi.extensionType = UIObjectFactory.packageItemExtensions["ui://" + pi.owner.name + "/" + pi.name];
+        };
+        UIObjectFactory.newObject = function (pi) {
+            if (pi.extensionType != null)
+                return new pi.extensionType();
+            else
+                return this.newObject2(pi.objectType);
+        };
+        UIObjectFactory.newObject2 = function (type) {
+            switch (type) {
+                case fairygui.ObjectType.Image:
+                    return new fairygui.GImage();
+                case fairygui.ObjectType.MovieClip:
+                    return new fairygui.GMovieClip();
+                case fairygui.ObjectType.Component:
+                    return new fairygui.GComponent();
+                case fairygui.ObjectType.Text:
+                    return new fairygui.GTextField();
+                case fairygui.ObjectType.RichText:
+                    return new fairygui.GRichTextField();
+                case fairygui.ObjectType.InputText:
+                    return new fairygui.GTextInput();
+                case fairygui.ObjectType.Group:
+                    return new fairygui.GGroup();
+                case fairygui.ObjectType.List:
+                    return new fairygui.GList();
+                case fairygui.ObjectType.Graph:
+                    return new fairygui.GGraph();
+                case fairygui.ObjectType.Loader:
+                    if (UIObjectFactory.loaderType != null)
+                        return new UIObjectFactory.loaderType();
+                    else
+                        return new fairygui.GLoader();
+                case fairygui.ObjectType.Button:
+                    return new fairygui.GButton();
+                case fairygui.ObjectType.Label:
+                    return new fairygui.GLabel();
+                case fairygui.ObjectType.ProgressBar:
+                    return new fairygui.GProgressBar();
+                case fairygui.ObjectType.Slider:
+                    return new fairygui.GSlider();
+                case fairygui.ObjectType.ScrollBar:
+                    return new fairygui.GScrollBar();
+                case fairygui.ObjectType.ComboBox:
+                    return new fairygui.GComboBox();
+                default:
+                    return null;
+            }
+        };
+        UIObjectFactory.packageItemExtensions = {};
+        return UIObjectFactory;
+    }());
+    fairygui.UIObjectFactory = UIObjectFactory;
+    __reflect(UIObjectFactory.prototype, "fairygui.UIObjectFactory");
+})(fairygui || (fairygui = {}));
 //////////////////////////////////////////////////////////////////////////////////////
 //
 //  Copyright (c) 2014-present, Egret Technology.
@@ -12838,49 +13335,57 @@ var Main = (function (_super) {
      * Create a game scene
      */
     Main.prototype.createGameScene = function () {
-        var sky = this.createBitmapByName("bg_jpg");
-        this.addChild(sky);
-        var stageW = this.stage.stageWidth;
-        var stageH = this.stage.stageHeight;
-        sky.width = stageW;
-        sky.height = stageH;
-        var topMask = new egret.Shape();
-        topMask.graphics.beginFill(0x000000, 0.5);
-        topMask.graphics.drawRect(0, 0, stageW, 172);
-        topMask.graphics.endFill();
-        topMask.y = 33;
-        this.addChild(topMask);
-        var icon = this.createBitmapByName("egret_icon_png");
-        this.addChild(icon);
-        icon.x = 26;
-        icon.y = 33;
-        var line = new egret.Shape();
-        line.graphics.lineStyle(2, 0xffffff);
-        line.graphics.moveTo(0, 0);
-        line.graphics.lineTo(0, 117);
-        line.graphics.endFill();
-        line.x = 172;
-        line.y = 61;
-        this.addChild(line);
-        var colorLabel = new egret.TextField();
-        colorLabel.textColor = 0xffffff;
-        colorLabel.width = stageW - 172;
-        colorLabel.textAlign = "center";
-        colorLabel.text = "Hello Egret";
-        colorLabel.size = 24;
-        colorLabel.x = 172;
-        colorLabel.y = 80;
-        this.addChild(colorLabel);
-        var textfield = new egret.TextField();
-        this.addChild(textfield);
-        textfield.alpha = 0;
-        textfield.width = stageW - 172;
-        textfield.textAlign = egret.HorizontalAlign.CENTER;
-        textfield.size = 24;
-        textfield.textColor = 0xffffff;
-        textfield.x = 172;
-        textfield.y = 135;
-        this.textfield = textfield;
+        var fightScene = new FightScene(this.stage);
+        fightScene.walk_timeScale = 1;
+        fightScene.attack_timeScale = 2;
+        this.addChild(fightScene);
+        fairygui.GRoot.inst.setSize(this.stage.stageWidth, this.stage.stageHeight);
+        fairygui.main.mainBinder.bindAll();
+        var scene = fairygui.UIPackage.createObject("main", "scene");
+        this.addChild(scene._container);
+        // let sky = this.createBitmapByName("bg_jpg");
+        // this.addChild(sky);
+        // let stageW = this.stage.stageWidth;
+        // let stageH = this.stage.stageHeight;
+        // sky.width = stageW;
+        // sky.height = stageH;
+        // let topMask = new egret.Shape();
+        // topMask.graphics.beginFill(0x000000, 0.5);
+        // topMask.graphics.drawRect(0, 0, stageW, 172);
+        // topMask.graphics.endFill();
+        // topMask.y = 33;
+        // this.addChild(topMask);
+        // let icon = this.createBitmapByName("egret_icon_png");
+        // this.addChild(icon);
+        // icon.x = 26;
+        // icon.y = 33;
+        // let line = new egret.Shape();
+        // line.graphics.lineStyle(2, 0xffffff);
+        // line.graphics.moveTo(0, 0);
+        // line.graphics.lineTo(0, 117);
+        // line.graphics.endFill();
+        // line.x = 172;
+        // line.y = 61;
+        // this.addChild(line);
+        // let colorLabel = new egret.TextField();
+        // colorLabel.textColor = 0xffffff;
+        // colorLabel.width = stageW - 172;
+        // colorLabel.textAlign = "center";
+        // colorLabel.text = "Hello Egret";
+        // colorLabel.size = 24;
+        // colorLabel.x = 172;
+        // colorLabel.y = 80;
+        // this.addChild(colorLabel);
+        // let textfield = new egret.TextField();
+        // this.addChild(textfield);
+        // textfield.alpha = 0;
+        // textfield.width = stageW - 172;
+        // textfield.textAlign = egret.HorizontalAlign.CENTER;
+        // textfield.size = 24;
+        // textfield.textColor = 0xffffff;
+        // textfield.x = 172;
+        // textfield.y = 135;
+        // this.textfield = textfield;
     };
     /**
      * 根据name关键字创建一个Bitmap对象。name属性请参考resources/resource.json配置文件的内容。
@@ -12922,503 +13427,6 @@ var Main = (function (_super) {
     return Main;
 }(egret.DisplayObjectContainer));
 __reflect(Main.prototype, "Main");
-var fairygui;
-(function (fairygui) {
-    var UIPackage = (function () {
-        function UIPackage() {
-            this._items = new Array();
-            this._itemsById = {};
-            this._itemsByName = {};
-            this._sprites = {};
-        }
-        UIPackage.getById = function (id) {
-            return UIPackage._packageInstById[id];
-        };
-        UIPackage.getByName = function (name) {
-            return UIPackage._packageInstByName[name];
-        };
-        UIPackage.addPackage = function (resKey, descData) {
-            if (descData === void 0) { descData = null; }
-            if (!descData) {
-                descData = RES.getRes(resKey);
-                if (!descData)
-                    throw "Resource '" + resKey + "' not found, please check default.res.json!";
-            }
-            var pkg = new UIPackage();
-            pkg.loadPackage(new fairygui.ByteBuffer(descData), resKey);
-            UIPackage._packageInstById[pkg.id] = pkg;
-            UIPackage._packageInstByName[pkg.name] = pkg;
-            pkg.customId = resKey;
-            return pkg;
-        };
-        UIPackage.removePackage = function (packageId) {
-            var pkg = UIPackage._packageInstById[packageId];
-            pkg.dispose();
-            delete UIPackage._packageInstById[pkg.id];
-            if (pkg._customId != null)
-                delete UIPackage._packageInstById[pkg._customId];
-            delete UIPackage._packageInstByName[pkg.name];
-        };
-        UIPackage.createObject = function (pkgName, resName, userClass) {
-            if (userClass === void 0) { userClass = null; }
-            var pkg = UIPackage.getByName(pkgName);
-            if (pkg)
-                return pkg.createObject(resName, userClass);
-            else
-                return null;
-        };
-        UIPackage.createObjectFromURL = function (url, userClass) {
-            if (userClass === void 0) { userClass = null; }
-            var pi = UIPackage.getItemByURL(url);
-            if (pi)
-                return pi.owner.internalCreateObject(pi, userClass);
-            else
-                return null;
-        };
-        UIPackage.getItemURL = function (pkgName, resName) {
-            var pkg = UIPackage.getByName(pkgName);
-            if (!pkg)
-                return null;
-            var pi = pkg._itemsByName[resName];
-            if (!pi)
-                return null;
-            return "ui://" + pkg.id + pi.id;
-        };
-        UIPackage.getItemByURL = function (url) {
-            var pos1 = url.indexOf("//");
-            if (pos1 == -1)
-                return null;
-            var pos2 = url.indexOf("/", pos1 + 2);
-            if (pos2 == -1) {
-                if (url.length > 13) {
-                    var pkgId = url.substr(5, 8);
-                    var pkg = UIPackage.getById(pkgId);
-                    if (pkg != null) {
-                        var srcId = url.substr(13);
-                        return pkg.getItemById(srcId);
-                    }
-                }
-            }
-            else {
-                var pkgName = url.substr(pos1 + 2, pos2 - pos1 - 2);
-                pkg = UIPackage.getByName(pkgName);
-                if (pkg != null) {
-                    var srcName = url.substr(pos2 + 1);
-                    return pkg.getItemByName(srcName);
-                }
-            }
-            return null;
-        };
-        UIPackage.normalizeURL = function (url) {
-            if (url == null)
-                return null;
-            var pos1 = url.indexOf("//");
-            if (pos1 == -1)
-                return null;
-            var pos2 = url.indexOf("/", pos1 + 2);
-            if (pos2 == -1)
-                return url;
-            var pkgName = url.substr(pos1 + 2, pos2 - pos1 - 2);
-            var srcName = url.substr(pos2 + 1);
-            return UIPackage.getItemURL(pkgName, srcName);
-        };
-        UIPackage.setStringsSource = function (source) {
-            fairygui.TranslationHelper.loadFromXML(source);
-        };
-        UIPackage.prototype.loadPackage = function (buffer, resKey) {
-            if (buffer.readUnsignedInt() != 0x46475549)
-                throw "FairyGUI: old package format found in '" + resKey + "'";
-            buffer.version = buffer.readInt();
-            var compressed = buffer.readBool();
-            this._id = buffer.readUTF();
-            this._name = buffer.readUTF();
-            buffer.skip(20);
-            if (compressed) {
-                var buf = new Uint8Array(buffer.buffer, buffer.position, buffer.length - buffer.position);
-                var inflater = new Zlib.RawInflate(buf);
-                buffer = new fairygui.ByteBuffer(inflater.decompress());
-            }
-            var indexTablePos = buffer.position;
-            var cnt;
-            var i;
-            var nextPos;
-            buffer.seek(indexTablePos, 4);
-            cnt = buffer.readInt();
-            var stringTable = new Array(cnt);
-            stringTable.reduceRight;
-            for (i = 0; i < cnt; i++)
-                stringTable[i] = buffer.readUTF();
-            buffer.stringTable = stringTable;
-            buffer.seek(indexTablePos, 1);
-            var pi;
-            resKey = resKey + "_";
-            cnt = buffer.readShort();
-            for (i = 0; i < cnt; i++) {
-                nextPos = buffer.readInt();
-                nextPos += buffer.position;
-                pi = new fairygui.PackageItem();
-                pi.owner = this;
-                pi.type = buffer.readByte();
-                pi.id = buffer.readS();
-                pi.name = buffer.readS();
-                buffer.readS(); //path
-                pi.file = buffer.readS();
-                buffer.readBool(); //exported
-                pi.width = buffer.readInt();
-                pi.height = buffer.readInt();
-                switch (pi.type) {
-                    case fairygui.PackageItemType.Image:
-                        {
-                            pi.objectType = fairygui.ObjectType.Image;
-                            var scaleOption = buffer.readByte();
-                            if (scaleOption == 1) {
-                                pi.scale9Grid = new egret.Rectangle();
-                                pi.scale9Grid.x = buffer.readInt();
-                                pi.scale9Grid.y = buffer.readInt();
-                                pi.scale9Grid.width = buffer.readInt();
-                                pi.scale9Grid.height = buffer.readInt();
-                                pi.tileGridIndice = buffer.readInt();
-                            }
-                            else if (scaleOption == 2)
-                                pi.scaleByTile = true;
-                            pi.smoothing = buffer.readBool();
-                            break;
-                        }
-                    case fairygui.PackageItemType.MovieClip:
-                        {
-                            pi.smoothing = buffer.readBool();
-                            pi.objectType = fairygui.ObjectType.MovieClip;
-                            pi.rawData = buffer.readBuffer();
-                            break;
-                        }
-                    case fairygui.PackageItemType.Font:
-                        {
-                            pi.rawData = buffer.readBuffer();
-                            break;
-                        }
-                    case fairygui.PackageItemType.Component:
-                        {
-                            var extension = buffer.readByte();
-                            if (extension > 0)
-                                pi.objectType = extension;
-                            else
-                                pi.objectType = fairygui.ObjectType.Component;
-                            pi.rawData = buffer.readBuffer();
-                            fairygui.UIObjectFactory.resolvePackageItemExtension(pi);
-                            break;
-                        }
-                    case fairygui.PackageItemType.Atlas:
-                    case fairygui.PackageItemType.Sound:
-                    case fairygui.PackageItemType.Misc:
-                        {
-                            pi.file = resKey + fairygui.ToolSet.getFileName(pi.file);
-                            break;
-                        }
-                }
-                this._items.push(pi);
-                this._itemsById[pi.id] = pi;
-                if (pi.name != null)
-                    this._itemsByName[pi.name] = pi;
-                buffer.position = nextPos;
-            }
-            buffer.seek(indexTablePos, 2);
-            cnt = buffer.readShort();
-            for (i = 0; i < cnt; i++) {
-                nextPos = buffer.readShort();
-                nextPos += buffer.position;
-                var itemId = buffer.readS();
-                pi = this._itemsById[buffer.readS()];
-                var sprite = new AtlasSprite();
-                sprite.atlas = pi;
-                sprite.rect.x = buffer.readInt();
-                sprite.rect.y = buffer.readInt();
-                sprite.rect.width = buffer.readInt();
-                sprite.rect.height = buffer.readInt();
-                sprite.rotated = buffer.readBool();
-                this._sprites[itemId] = sprite;
-                buffer.position = nextPos;
-            }
-            if (buffer.seek(indexTablePos, 3)) {
-                /*cnt = buffer.readShort();
-                for (i = 0; i < cnt; i++)
-                {
-                    nextPos = buffer.readInt();
-                    nextPos += buffer.position;
-                    
-                    pi = this._itemsById[buffer.readS()];
-                    if (pi && pi.type == PackageItemType.Image)
-                    {
-                        pi.pixelHitTestData = new PixelHitTestData();
-                        pi.pixelHitTestData.load(buffer);
-                    }
-                    
-                    buffer.position = nextPos;
-                }*/
-            }
-        };
-        UIPackage.prototype.dispose = function () {
-            var cnt = this._items.length;
-            for (var i = 0; i < cnt; i++) {
-                var pi = this._items[i];
-                var texture = pi.texture;
-                if (texture != null)
-                    texture.dispose();
-                else if (pi.frames != null) {
-                    var frameCount = pi.frames.length;
-                    for (var j = 0; j < frameCount; j++) {
-                        texture = pi.frames[j].texture;
-                        if (texture != null)
-                            texture.dispose();
-                    }
-                }
-            }
-        };
-        Object.defineProperty(UIPackage.prototype, "id", {
-            get: function () {
-                return this._id;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(UIPackage.prototype, "name", {
-            get: function () {
-                return this._name;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(UIPackage.prototype, "customId", {
-            get: function () {
-                return this._customId;
-            },
-            set: function (value) {
-                if (this._customId != null)
-                    delete UIPackage._packageInstById[this._customId];
-                this._customId = value;
-                if (this._customId != null)
-                    UIPackage._packageInstById[this._customId] = this;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        UIPackage.prototype.createObject = function (resName, userClass) {
-            if (userClass === void 0) { userClass = null; }
-            var pi = this._itemsByName[resName];
-            if (pi)
-                return this.internalCreateObject(pi, userClass);
-            else
-                return null;
-        };
-        UIPackage.prototype.internalCreateObject = function (item, userClass) {
-            if (userClass === void 0) { userClass = null; }
-            var g;
-            if (item.type == fairygui.PackageItemType.Component) {
-                if (userClass != null)
-                    g = new userClass();
-                else
-                    g = fairygui.UIObjectFactory.newObject(item);
-            }
-            else
-                g = fairygui.UIObjectFactory.newObject(item);
-            if (g == null)
-                return null;
-            UIPackage._constructing++;
-            g.packageItem = item;
-            g.constructFromResource();
-            UIPackage._constructing--;
-            return g;
-        };
-        UIPackage.prototype.getItemById = function (itemId) {
-            return this._itemsById[itemId];
-        };
-        UIPackage.prototype.getItemByName = function (resName) {
-            return this._itemsByName[resName];
-        };
-        UIPackage.prototype.getItemAssetByName = function (resName) {
-            var pi = this._itemsByName[resName];
-            if (pi == null) {
-                throw "Resource not found -" + resName;
-            }
-            return this.getItemAsset(pi);
-        };
-        UIPackage.prototype.getItemAsset = function (item) {
-            switch (item.type) {
-                case fairygui.PackageItemType.Image:
-                    if (!item.decoded) {
-                        item.decoded = true;
-                        var sprite = this._sprites[item.id];
-                        if (sprite != null)
-                            item.texture = this.createSpriteTexture(sprite);
-                    }
-                    return item.texture;
-                case fairygui.PackageItemType.Atlas:
-                    if (!item.decoded) {
-                        item.decoded = true;
-                        item.texture = RES.getRes(item.file);
-                        if (!item.texture)
-                            console.log("Resource '" + item.file + "' not found, please check default.res.json!");
-                    }
-                    return item.texture;
-                case fairygui.PackageItemType.Sound:
-                    if (!item.decoded) {
-                        item.decoded = true;
-                        item.sound = RES.getRes(item.file);
-                        if (!item.sound)
-                            console.log("Resource '" + item.file + "' not found, please check default.res.json!");
-                    }
-                    return item.sound;
-                case fairygui.PackageItemType.Font:
-                    if (!item.decoded) {
-                        item.decoded = true;
-                        this.loadFont(item);
-                    }
-                    return item.bitmapFont;
-                case fairygui.PackageItemType.MovieClip:
-                    if (!item.decoded) {
-                        item.decoded = true;
-                        this.loadMovieClip(item);
-                    }
-                    return item.frames;
-                case fairygui.PackageItemType.Misc:
-                    if (item.file)
-                        return RES.getRes(item.file);
-                    else
-                        return null;
-                default:
-                    return null;
-            }
-        };
-        UIPackage.prototype.createSpriteTexture = function (sprite) {
-            var atlasTexture = this.getItemAsset(sprite.atlas);
-            if (atlasTexture == null)
-                return null;
-            else
-                return this.createSubTexture(atlasTexture, sprite.rect);
-        };
-        UIPackage.prototype.createSubTexture = function (atlasTexture, uvRect) {
-            var texture = new egret.Texture();
-            if (atlasTexture["_bitmapData"]) {
-                texture["_bitmapData"] = atlasTexture["_bitmapData"];
-                texture.$initData(atlasTexture["_bitmapX"] + uvRect.x, atlasTexture["_bitmapY"] + uvRect.y, uvRect.width, uvRect.height, 0, 0, uvRect.width, uvRect.height, atlasTexture["_sourceWidth"], atlasTexture["_sourceHeight"]);
-            }
-            else {
-                texture.bitmapData = atlasTexture.bitmapData;
-                texture.$initData(atlasTexture["$bitmapX"] + uvRect.x, atlasTexture["$bitmapY"] + uvRect.y, uvRect.width, uvRect.height, 0, 0, uvRect.width, uvRect.height, atlasTexture["$sourceWidth"], atlasTexture["$sourceHeight"]);
-            }
-            return texture;
-        };
-        UIPackage.prototype.loadMovieClip = function (item) {
-            var buffer = item.rawData;
-            buffer.seek(0, 0);
-            item.interval = buffer.readInt();
-            item.swing = buffer.readBool();
-            item.repeatDelay = buffer.readInt();
-            buffer.seek(0, 1);
-            var frameCount = buffer.readShort();
-            item.frames = Array(frameCount);
-            var spriteId;
-            var frame;
-            var sprite;
-            for (var i = 0; i < frameCount; i++) {
-                var nextPos = buffer.readShort();
-                nextPos += buffer.position;
-                frame = new fairygui.Frame();
-                frame.rect.x = buffer.readInt();
-                frame.rect.y = buffer.readInt();
-                frame.rect.width = buffer.readInt();
-                frame.rect.height = buffer.readInt();
-                frame.addDelay = buffer.readInt();
-                spriteId = buffer.readS();
-                if (spriteId != null && (sprite = this._sprites[spriteId]) != null)
-                    frame.texture = this.createSpriteTexture(sprite);
-                item.frames[i] = frame;
-                buffer.position = nextPos;
-            }
-        };
-        UIPackage.prototype.loadFont = function (item) {
-            var font = new fairygui.BitmapFont();
-            item.bitmapFont = font;
-            var buffer = item.rawData;
-            buffer.seek(0, 0);
-            font.ttf = buffer.readBool();
-            buffer.readBool(); //tint
-            font.resizable = buffer.readBool();
-            buffer.readBool(); //has channel
-            font.size = buffer.readInt();
-            var xadvance = buffer.readInt();
-            var lineHeight = buffer.readInt();
-            var mainTexture = null;
-            var mainSprite = this._sprites[item.id];
-            if (mainSprite != null)
-                mainTexture = (this.getItemAsset(mainSprite.atlas));
-            buffer.seek(0, 1);
-            var bg = null;
-            var cnt = buffer.readInt();
-            for (var i = 0; i < cnt; i++) {
-                var nextPos = buffer.readShort();
-                nextPos += buffer.position;
-                bg = new fairygui.BMGlyph();
-                var ch = buffer.readChar();
-                font.glyphs[ch] = bg;
-                var img = buffer.readS();
-                var bx = buffer.readInt();
-                var by = buffer.readInt();
-                bg.offsetX = buffer.readInt();
-                bg.offsetY = buffer.readInt();
-                bg.width = buffer.readInt();
-                bg.height = buffer.readInt();
-                bg.advance = buffer.readInt();
-                bg.channel = buffer.readByte();
-                if (bg.channel == 1)
-                    bg.channel = 3;
-                else if (bg.channel == 2)
-                    bg.channel = 2;
-                else if (bg.channel == 3)
-                    bg.channel = 1;
-                if (!font.ttf) {
-                    var charImg = this._itemsById[img];
-                    if (charImg) {
-                        this.getItemAsset(charImg);
-                        bg.width = charImg.width;
-                        bg.height = charImg.height;
-                        bg.texture = charImg.texture;
-                    }
-                }
-                else {
-                    bg.texture = this.createSubTexture(mainTexture, new egret.Rectangle(bx + mainSprite.rect.x, by + mainSprite.rect.y, bg.width, bg.height));
-                }
-                if (font.ttf)
-                    bg.lineHeight = lineHeight;
-                else {
-                    if (bg.advance == 0) {
-                        if (xadvance == 0)
-                            bg.advance = bg.offsetX + bg.width;
-                        else
-                            bg.advance = xadvance;
-                    }
-                    bg.lineHeight = bg.offsetY < 0 ? bg.height : (bg.offsetY + bg.height);
-                    if (bg.lineHeight < font.size)
-                        bg.lineHeight = font.size;
-                }
-                buffer.position = nextPos;
-            }
-        };
-        //internal
-        UIPackage._constructing = 0;
-        UIPackage._packageInstById = {};
-        UIPackage._packageInstByName = {};
-        return UIPackage;
-    }());
-    fairygui.UIPackage = UIPackage;
-    __reflect(UIPackage.prototype, "fairygui.UIPackage");
-    var AtlasSprite = (function () {
-        function AtlasSprite() {
-            this.rect = new egret.Rectangle();
-        }
-        return AtlasSprite;
-    }());
-    __reflect(AtlasSprite.prototype, "AtlasSprite");
-})(fairygui || (fairygui = {}));
 var fairygui;
 (function (fairygui) {
     var Window = (function (_super) {
@@ -17212,5 +17220,461 @@ var fairygui;
         __reflect(UI_scene.prototype, "fairygui.main.UI_scene");
     })(main = fairygui.main || (fairygui.main = {}));
 })(fairygui || (fairygui = {}));
+var FightScene = (function (_super) {
+    __extends(FightScene, _super);
+    function FightScene(stage) {
+        var _this = _super.call(this) || this;
+        /**
+         * 每一帧帧移动的距离
+         */
+        _this._speed = 5;
+        _this._pasue = false;
+        /**
+         * 击杀次数
+         */
+        _this._killTimes = 0;
+        _this._atttackTimes = 0;
+        _this._stage = stage;
+        _this._stage.addEventListener(egret.Event.RESIZE, _this.reSizeHandler, _this);
+        _this.init();
+        return _this;
+    }
+    FightScene.prototype.init = function () {
+        this.role = new Role();
+        this.pet = new Role();
+        this._monterList = [];
+        var bg = new egret.ImageLoader();
+        bg.addEventListener(egret.Event.COMPLETE, this.loadBg1Complete, this);
+        bg.load('resource/res/map_0.png');
+    };
+    FightScene.prototype.loadBg1Complete = function (e) {
+        var imageLoader = e.currentTarget;
+        var texture = new egret.Texture();
+        texture._setBitmapData(imageLoader.data);
+        this._textureH = texture.$bitmapHeight;
+        this._textureW = texture.$bitmapWidth;
+        this._bg_1 = new egret.Bitmap(texture);
+        this._bg_1.x = 0;
+        this._bg_1.y = 0;
+        this._bg_1.height = this._stage.stageHeight / FightSet.scale;
+        this._bg_1.width = this._stage.stageHeight / FightSet.scale / texture.$bitmapHeight * texture.$bitmapWidth;
+        this.addChild(this._bg_1);
+        var bg = new egret.ImageLoader();
+        bg.addEventListener(egret.Event.COMPLETE, this.loadBg2Complete, this);
+        bg.load('resource/res/map_0.png');
+    };
+    FightScene.prototype.loadBg2Complete = function (e) {
+        var imageLoader = e.currentTarget;
+        var texture = new egret.Texture();
+        texture._setBitmapData(imageLoader.data);
+        this._textureH = texture.$bitmapHeight;
+        this._textureW = texture.$bitmapWidth;
+        this._bg_2 = new egret.Bitmap(texture);
+        this._bg_2.x = this._bg_1.x + this._bg_1.width;
+        this._bg_2.y = 0;
+        this._bg_2.height = this._stage.stageHeight / FightSet.scale;
+        this._bg_2.width = this._stage.stageHeight / FightSet.scale / texture.$bitmapHeight * texture.$bitmapWidth;
+        this.addChild(this._bg_2);
+        this.createPet();
+        this.createRole();
+        this.createMonster();
+        this._stage.addEventListener(egret.Event.ENTER_FRAME, this.enterFrameHandler, this);
+    };
+    FightScene.prototype.createRole = function () {
+        this.role.updateData("role_0");
+        this.role.x = this._stage.stageWidth * 0.4;
+        this.role.y = this._stage.stageHeight / FightSet.scale * 0.9;
+        this.role.scaleX = 0.4;
+        this.role.scaleY = 0.4;
+        this.role.touchEnabled = false;
+        this.addChild(this.role);
+        this.role.playAnimation(AnmName.walk, 0);
+    };
+    FightScene.prototype.createPet = function () {
+        this.pet.updateData("pet_0");
+        this.pet.x = this._stage.stageWidth * 0.15;
+        this.pet.y = this._stage.stageHeight / FightSet.scale * 0.9;
+        this.pet.scaleX = -0.2;
+        this.pet.scaleY = 0.2;
+        this.pet.touchEnabled = false;
+        this.addChild(this.pet);
+        this.pet.playAnimation(AnmName.walk, 0);
+    };
+    FightScene.prototype.createMonster = function () {
+        for (var i = 9; i >= 0; i--) {
+            var monster = new Role();
+            monster.updateData("monster_0");
+            monster.x = 1280 + 1000 * i;
+            monster.y = this._stage.stageHeight / FightSet.scale * 0.9;
+            monster.scaleX = -0.4;
+            monster.scaleY = 0.4;
+            monster.touchEnabled = false;
+            this.addChildAt(monster, 2);
+            monster.playAnimation(AnmName.steady, 0);
+            this._monterList.push(monster);
+        }
+    };
+    FightScene.prototype.reSizeHandler = function () {
+        this._bg_1.height = this._stage.stageHeight / FightSet.scale;
+        this._bg_1.width = this._stage.stageHeight / FightSet.scale / this._textureH * this._textureW;
+        this._bg_2.height = this._stage.stageHeight / FightSet.scale;
+        this._bg_2.width = this._stage.stageHeight / FightSet.scale / this._textureH * this._textureW;
+    };
+    /**
+     * 帧刷新
+     */
+    FightScene.prototype.enterFrameHandler = function () {
+        if (!this._pasue) {
+            this.roll();
+        }
+    };
+    /**
+     * 滚屏
+     */
+    FightScene.prototype.roll = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var i, i, monster;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this._bg_1.x -= this._speed;
+                        this._bg_2.x -= this._speed;
+                        for (i = this._monterList.length - 1; i >= 0; i--) {
+                            this._monterList[i].x -= this._speed;
+                            if (this._monterList[i].x + this._monterList[i].width / 2 < 0) {
+                                this._monterList[i].dispose();
+                                this._monterList.splice(i, 1);
+                            }
+                        }
+                        if (this._bg_1.x <= -this._bg_1.width) {
+                            this._bg_1.x = this._bg_2.x + this._bg_2.width;
+                        }
+                        else if (this._bg_2.x <= -this._bg_2.width) {
+                            this._bg_2.x = this._bg_1.x + this._bg_1.width;
+                        }
+                        i = this._monterList.length - 1;
+                        _a.label = 1;
+                    case 1:
+                        if (!(i >= 0)) return [3 /*break*/, 4];
+                        monster = this._monterList[i];
+                        if (!(monster.alive && monster.display && this.role.display)) return [3 /*break*/, 3];
+                        if (!(monster.x - this.role.x < 200)) return [3 /*break*/, 3];
+                        this._pasue = true;
+                        return [4 /*yield*/, this.attack(2, monster)];
+                    case 2:
+                        _a.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        i--;
+                        return [3 /*break*/, 1];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    FightScene.prototype.attack = function (attackTimes, monster) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.pet.playAnimation(AnmName.steady, 0);
+                        return [4 /*yield*/, this.role.playAnimation(AnmName.attack, 1, function (any) { return __awaiter(_this, void 0, void 0, function () {
+                                var _this = this;
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, monster.playAnimation(AnmName.hit, 1, function (any) { return __awaiter(_this, void 0, void 0, function () {
+                                                return __generator(this, function (_a) {
+                                                    switch (_a.label) {
+                                                        case 0:
+                                                            this._atttackTimes++;
+                                                            if (!(this._atttackTimes < attackTimes)) return [3 /*break*/, 1];
+                                                            this.attack(attackTimes, monster);
+                                                            return [3 /*break*/, 3];
+                                                        case 1: return [4 /*yield*/, monster.playAnimation(AnmName.dead, 1)];
+                                                        case 2:
+                                                            _a.sent();
+                                                            this._killTimes++;
+                                                            if (this._killTimes >= 10) {
+                                                            }
+                                                            else {
+                                                                monster.alive = false;
+                                                                this._pasue = false;
+                                                                this.pet.playAnimation(AnmName.walk, 0);
+                                                                this.role.playAnimation(AnmName.walk, 0);
+                                                                this._atttackTimes = 0;
+                                                            }
+                                                            _a.label = 3;
+                                                        case 3: return [2 /*return*/];
+                                                    }
+                                                });
+                                            }); })];
+                                        case 1:
+                                            _a.sent();
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); })];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Object.defineProperty(FightScene.prototype, "walk_timeScale", {
+        set: function (value) {
+            this.role.walk_timeScale = value;
+            if (this.role.display && this.role.current_animationName == AnmName.walk) {
+                this.role.display.animation.timeScale = value;
+            }
+            this.pet.walk_timeScale = value;
+            if (this.pet.display && this.pet.current_animationName == AnmName.walk) {
+                this.pet.display.animation.timeScale = value;
+            }
+            this._speed = value * 5;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FightScene.prototype, "attack_timeScale", {
+        set: function (value) {
+            this.role.attack_timeScale = value;
+            if (this.role && this.role.display && this.role.current_animationName == AnmName.attack) {
+                this.role.display.animation.timeScale = value;
+            }
+            this.pet.attack_timeScale = value;
+            if (this.pet && this.role.display && this.pet.current_animationName == AnmName.attack) {
+                this.pet.display.animation.timeScale = value;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return FightScene;
+}(egret.DisplayObjectContainer));
+__reflect(FightScene.prototype, "FightScene");
+var FightSet = (function () {
+    function FightSet() {
+    }
+    /**
+         * stage与战斗场景背景图的高度比例
+         */
+    FightSet.scale = 3;
+    return FightSet;
+}());
+__reflect(FightSet.prototype, "FightSet");
+var Role = (function (_super) {
+    __extends(Role, _super);
+    function Role() {
+        var _this = _super.call(this) || this;
+        /**
+         * 行走动作速度
+         */
+        _this.walk_timeScale = 1;
+        /**
+         * 行走动作速度
+         */
+        _this.attack_timeScale = 1;
+        /**
+         * 是否活着
+         */
+        _this.alive = true;
+        _this.needWaitPlay = null;
+        if (!Role.factory) {
+            Role.factory = dragonBones.EgretFactory.factory;
+            Role.armatureConfig = new Map();
+        }
+        return _this;
+    }
+    Object.defineProperty(Role.prototype, "display", {
+        get: function () {
+            return this._display;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * 刷新皮肤
+     */
+    Role.prototype.updateData = function (name) {
+        if (this.lastName == name) {
+            return;
+        }
+        this.lastName = name;
+        if (this._display) {
+            this._display.dispose();
+        }
+        if (RES.isGroupLoaded(name)) {
+            if (Role.factory.getDragonBonesData(this.lastName)) {
+                this.initDisplay();
+                return; //add by ldj, 不重复添加db动画资源到factory,2018-7-12 15:22:19
+            }
+            this._skeData = null;
+            this._texData = null;
+            this._pngData = null;
+            this._skeData = RES.getRes(name + "_ske_json");
+            this._texData = RES.getRes(name + "_tex_json");
+            this._pngData = RES.getRes(name + "_tex_png");
+            Role.factory.parseDragonBonesData(this._skeData, this.lastName);
+            Role.factory.parseTextureAtlasData(this._texData, this._pngData, this.lastName);
+            Role.armatureConfig.set(this.lastName, true);
+            this.initDisplay();
+            return;
+        }
+        if (!Role.armatureConfig.get(name)) {
+            this._skeData = null;
+            this._texData = null;
+            this._pngData = null;
+            RES.getResAsync(name + "_ske_json", this.showSkin, this);
+            RES.getResAsync(name + "_tex_json", this.showSkin, this);
+            RES.getResAsync(name + "_tex_png", this.showSkin, this);
+        }
+        else {
+            this.initDisplay();
+        }
+    };
+    /**
+     * 显示皮肤
+     */
+    Role.prototype.showSkin = function (data_, key_) {
+        switch (key_) {
+            case this.lastName + "_ske_json":
+                this._skeData = data_;
+                break;
+            case this.lastName + "_tex_json":
+                this._texData = data_;
+                break;
+            case this.lastName + "_tex_png":
+                this._pngData = data_;
+                break;
+        }
+        if (!this._skeData || !this._texData || !this._pngData) {
+            return;
+        }
+        if (!Role.factory.getDragonBonesData(this.lastName))
+            Role.factory.parseDragonBonesData(this._skeData, this.lastName);
+        if (!Role.factory.getTextureAtlasData(this.lastName))
+            Role.factory.parseTextureAtlasData(this._texData, this._pngData, this.lastName);
+        Role.armatureConfig.set(this.lastName, true);
+        this.initDisplay();
+    };
+    /**
+     * 初始化骨骼对象
+     */
+    Role.prototype.initDisplay = function () {
+        this._display = Role.factory.buildArmatureDisplay('animation', this.lastName, this.lastName, this.lastName);
+        this.stopAnimation();
+        this.addChild(this._display);
+        if (this.needWaitPlay) {
+            if (this._display.armature.animation.hasAnimation(this.needWaitPlay.name)) {
+                this.playAnm(this.needWaitPlay.name, this.needWaitPlay.playTimes);
+            }
+            this.needWaitPlay = null;
+        }
+        else {
+            this.initDefaultAnm();
+        }
+    };
+    /**
+     * 初始化显示默认骨骼动画
+     */
+    Role.prototype.initDefaultAnm = function () {
+        if (this._display.armature.animation.hasAnimation(AnmName.steady)) {
+            this.playAnm(AnmName.steady, 0);
+        }
+    };
+    /**
+     * 播放骨骼动画
+     */
+    Role.prototype.playAnimation = function (name, playTimes, callback, callbackParams, callbackObj) {
+        if (callback === void 0) { callback = null; }
+        if (callbackParams === void 0) { callbackParams = null; }
+        if (callbackObj === void 0) { callbackObj = null; }
+        if (!this._display) {
+            this.needWaitPlay = { "name": name, "playTimes": playTimes };
+        }
+        else {
+            this.playAnm(name, playTimes);
+        }
+        this.current_animationName = name;
+        this._callback = callback;
+        this._callbackParams = callbackParams;
+        this._callbackObj = callbackObj;
+        if (this._callback) {
+            this._display.addDBEventListener(dragonBones.EventObject.COMPLETE, this.onComplete, this);
+        }
+    };
+    Role.prototype.playAnm = function (name, playTimes) {
+        this._display.animation.play(name, playTimes);
+        if (name == AnmName.walk)
+            this.display.animation.timeScale = this.walk_timeScale;
+        else if (name == AnmName.attack)
+            this.display.animation.timeScale = this.attack_timeScale;
+    };
+    /**
+     * 停止播放
+     */
+    Role.prototype.stopAnimation = function () {
+        if (this._display) {
+            this._display.animation.reset();
+            this._display.animation.stop();
+        }
+        this._callbackObj = null;
+        this._callback = null;
+        this._callbackParams = null;
+    };
+    /**
+     * 动画播放完成
+     */
+    Role.prototype.onComplete = function (e) {
+        this._display.armature.eventDispatcher.removeEvent(dragonBones.EventObject.COMPLETE, this.onComplete, this);
+        if (this._callback) {
+            var callback = this._callback;
+            var callbackParams = this._callbackParams;
+            var obj = this._callbackObj;
+            this._callback = null;
+            this._callbackParams = null;
+            this._callbackObj = null;
+            callback.call(obj, callbackParams);
+        }
+    };
+    /**
+     * 是否有动作
+     */
+    Role.prototype.hasAnimation = function (name) {
+        if (!this._display) {
+            return false;
+        }
+        return this._display.animation.hasAnimation(name);
+    };
+    /**
+     * 销毁
+     */
+    Role.prototype.dispose = function () {
+        this.filters = [];
+        if (this.parent)
+            this.parent.removeChild(this);
+        if (this._display && this._display.parent)
+            this._display.parent.removeChild(this._display);
+        if (this._display) {
+            this._display.dispose();
+            this._display = null;
+        }
+    };
+    return Role;
+}(egret.Sprite));
+__reflect(Role.prototype, "Role");
+var AnmName = (function () {
+    function AnmName() {
+    }
+    AnmName.steady = "steady";
+    AnmName.walk = "walk";
+    AnmName.attack = "attack";
+    AnmName.hit = "hit";
+    AnmName.dead = "dead";
+    return AnmName;
+}());
+__reflect(AnmName.prototype, "AnmName");
 
 ;window.Main = Main;
