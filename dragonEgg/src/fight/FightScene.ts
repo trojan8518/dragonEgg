@@ -26,7 +26,7 @@ class FightScene extends egret.DisplayObjectContainer {
 
 	private _pasue: boolean = false;
 
-	public static sceneH:number = 380;
+	public static sceneH: number = 380;
 
 	/**
 	 * 击杀次数
@@ -92,7 +92,7 @@ class FightScene extends egret.DisplayObjectContainer {
 		this._bg_1.texture = texture;
 		this._bg_1.x = 0;
 		this._bg_1.y = 0;
-		this._bg_1.height =	FightScene.sceneH;
+		this._bg_1.height = FightScene.sceneH;
 		this._bg_1.width = FightScene.sceneH / texture.$bitmapHeight * texture.$bitmapWidth;
 		this.addChildAt(this._bg_1, 0);
 
@@ -144,13 +144,13 @@ class FightScene extends egret.DisplayObjectContainer {
 	private createRole() {
 		this.role.updateData("role_0");
 
-		this.role.x = this._stage.stageWidth * 0.4;
-
-		this.role.y = FightScene.sceneH * 0.9;
-
 		this.role.r_scaleX = 0.4;
 
 		this.role.r_scaleY = 0.4;
+
+		this.role.x = this._stage.stageWidth * 0.4;
+
+		this.role.y = FightScene.sceneH * 0.9;
 
 		this.role.touchEnabled = false;
 
@@ -162,13 +162,13 @@ class FightScene extends egret.DisplayObjectContainer {
 	private createPet() {
 		this.pet.updateData("pet_0");
 
-		this.pet.x = this._stage.stageWidth * 0.15;
-
-		this.pet.y = FightScene.sceneH * 0.9;
-
 		this.pet.r_scaleX = -0.2;
 
 		this.pet.r_scaleY = 0.2;
+
+		this.pet.x = this._stage.stageWidth * 0.15;
+
+		this.pet.y = FightScene.sceneH * 0.9;
 
 		this.pet.touchEnabled = false;
 
@@ -180,13 +180,13 @@ class FightScene extends egret.DisplayObjectContainer {
 	private createBird() {
 		this.bird.updateData("bird");
 
-		this.bird.x = this._stage.stageWidth;
-
-		this.bird.y = FightScene.sceneH * 0.3;
-
 		this.bird.r_scaleX = -0.2;
 
 		this.bird.r_scaleY = 0.2;
+
+		this.bird.x = this._stage.stageWidth;
+
+		this.bird.y = FightScene.sceneH * 0.3;
 
 		this.bird.touchEnabled = false;
 
@@ -226,15 +226,15 @@ class FightScene extends egret.DisplayObjectContainer {
 		for (let i = 9; i >= 0; i--) {
 			let monster: Role = new Role();
 
+			monster.r_scaleX = -0.4;
+
+			monster.r_scaleY = 0.4;
+
 			monster.updateData("monster_0");
 
 			monster.x = 1280 + 1000 * i;
 
 			monster.y = FightScene.sceneH * 0.9;
-
-			monster.r_scaleX = -0.4;
-
-			monster.r_scaleY = 0.4;
 
 			monster.touchEnabled = false;
 
@@ -315,9 +315,20 @@ class FightScene extends egret.DisplayObjectContainer {
 		await this.role.playAnimation(AnmName.attack, 1, async any => {
 			let tips = new HurtTips('123.B', this);
 
-			tips._view.x = this._stage.stageWidth * 0.6;
+			tips._view.x = this._stage.stageWidth * 0.5;
 
 			tips._view.y = FightScene.sceneH * 0.5;
+
+			let critTips = new CritTips('1234.C', this);
+
+			critTips._view.x = this._stage.stageWidth * 0.7;
+
+			critTips._view.y = FightScene.sceneH * 0.4;
+
+			// UIUtils.showMove('gold');
+			// UIUtils.showMove('diamond');
+			new Money('gold',10);
+			new Money('diamond',10);
 
 			await monster.playAnimation(AnmName.hit, 1, async any => {
 				this._atttackTimes++;
@@ -326,9 +337,18 @@ class FightScene extends egret.DisplayObjectContainer {
 					this.attack(attackTimes, monster);
 				}
 				else {
+					this._atttackTimes = 0;
+
+					GameModel.inst.updateData(DataType.MONSTER_LEVEL, 1)
+
 					await monster.playAnimation(AnmName.dead, 1)
 
 					this._killTimes++;
+
+					this._pasue = false;
+
+					if (this._killTimes == 9)
+						UIUtils.showBossTips();
 
 					if (this._killTimes >= 10) {//下一关
 						this._stage.removeEventListener(egret.Event.ENTER_FRAME, this.enterFrameHandler, this)
@@ -344,26 +364,26 @@ class FightScene extends egret.DisplayObjectContainer {
 
 						this.loadBg();
 
+						GameModel.inst.updateData(DataType.LEVEL, 1)
+
+						this._killTimes = 0;
+
 						// this._pasue = false;
 
-						// this.pet.playAnimation(AnmName.walk, 0);
+						this.pet.playAnimation(AnmName.walk, 0);
 
-						// this.role.playAnimation(AnmName.walk, 0)
+						this.role.playAnimation(AnmName.walk, 0)
+
+						// GameModel.inst.roleVO.monster_level
 
 						// this._atttackTimes = 0;
 					} else {
 						monster.alive = false;
+
+						this.pet.playAnimation(AnmName.walk, 0);
+
+						this.role.playAnimation(AnmName.walk, 0)
 					}
-
-					this._killTimes = 0;
-
-					this._pasue = false;
-
-					this.pet.playAnimation(AnmName.walk, 0);
-
-					this.role.playAnimation(AnmName.walk, 0)
-
-					this._atttackTimes = 0;
 				}
 			});
 		});
@@ -393,7 +413,7 @@ class FightScene extends egret.DisplayObjectContainer {
 			this.pet.display.animation.timeScale = value;
 		}
 
-		this._speed = value * 5;
+		this._speed = value * 8;
 	}
 
 	public set attack_timeScale(value) {

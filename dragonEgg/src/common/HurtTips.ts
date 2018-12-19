@@ -1,6 +1,6 @@
 /** 
- * 结算界面
- * @author zhangrui 2018.10.17
+ * 伤害提示
+ * @author zhangrui 2018.12.18
 */
 class HurtTips {
 

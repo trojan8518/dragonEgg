@@ -41,9 +41,9 @@ class Role extends egret.Sprite {
 	 */
 	public alive: boolean = true;
 
-	private _r_scaleX:number = 1;
+	private _r_scaleX: number = 1;
 
-	private _r_scaleY:number = 1;
+	private _r_scaleY: number = 1;
 
 	public constructor() {
 		super();
@@ -58,11 +58,11 @@ class Role extends egret.Sprite {
 		return this._display;
 	}
 
-	public set r_scaleX(value:number){
+	public set r_scaleX(value: number) {
 		this._r_scaleX = value;
 	}
 
-	public set r_scaleY(value:number){
+	public set r_scaleY(value: number) {
 		this._r_scaleY = value;
 	}
 
@@ -203,6 +203,11 @@ class Role extends egret.Sprite {
 
 
 	private playAnm(name, playTimes) {
+		if (name == AnmName.walk) {
+			SoundUtils.play(SoundType.MOVE, 0)
+		} else {
+			SoundUtils.stop(SoundType.MOVE)
+		}
 		this._display.animation.play(name, playTimes);
 
 		if (name == AnmName.walk)

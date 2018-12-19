@@ -7,6 +7,11 @@ module fairygui.main {
 		public type:fairygui.Controller;
 		public num:fairygui.GTextField;
 		public addBtn:fairygui.GButton;
+		public attack_effect:fairygui.Transition;
+		public defense_effect:fairygui.Transition;
+		public helmet_effect:fairygui.Transition;
+		public gold_effect:fairygui.Transition;
+		public diamond_effect:fairygui.Transition;
 
 		public static URL:string = "ui://eclrvg1uiyvx4i";
 
@@ -24,6 +29,11 @@ module fairygui.main {
 			this.type = this.getController("type");
 			this.num = <fairygui.GTextField><any>(this.getChild("num"));
 			this.addBtn = <fairygui.GButton><any>(this.getChild("addBtn"));
+			this.attack_effect = this.getTransition("attack_effect");
+			this.defense_effect = this.getTransition("defense_effect");
+			this.helmet_effect = this.getTransition("helmet_effect");
+			this.gold_effect = this.getTransition("gold_effect");
+			this.diamond_effect = this.getTransition("diamond_effect");
 		}
 	}
 }

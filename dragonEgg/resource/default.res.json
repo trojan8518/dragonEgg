@@ -1,7 +1,7 @@
 {
 	"groups":[
 		{
-			"keys":"main,main_atlas0",
+			"keys":"main,main_atlas0,diamond,gold,DIEBOOM_MP3,ERROR_MP3,GIRL_SHOUTING_MP3,HAMMER_MP3,INTROMUSIC_MP3,LIGHTNING_MP3,LVUP_MP3,MAN_SHOUTING_MP3,MONKEY_SHOUTING_MP3,MOVE_MP3,POPUP_MP3,STORY_MP3,UPGRADE_MP3,YEAH_MP3,BACKGROUND_MP3,BEHIT_MP3,BOOM_MP3,BTN_MP3,COIN_MP3,CRITICAL_MP3",
 			"name":"preload"
 		},
 		{
@@ -190,6 +190,116 @@
 			"name":"lightning_7_png",
 			"type":"image",
 			"url":"effect/lightning/lightning_7.png"
+		},
+		{
+			"name":"diamond",
+			"type":"image",
+			"url":"icon/diamond.png"
+		},
+		{
+			"name":"gold",
+			"type":"image",
+			"url":"icon/gold.png"
+		},
+		{
+			"name":"DIEBOOM_MP3",
+			"type":"sound",
+			"url":"sound/DieBoom.mp3"
+		},
+		{
+			"name":"ERROR_MP3",
+			"type":"sound",
+			"url":"sound/Error.mp3"
+		},
+		{
+			"name":"GIRL_SHOUTING_MP3",
+			"type":"sound",
+			"url":"sound/Girl_Shouting.mp3"
+		},
+		{
+			"name":"HAMMER_MP3",
+			"type":"sound",
+			"url":"sound/Hammer.mp3"
+		},
+		{
+			"name":"INTROMUSIC_MP3",
+			"type":"sound",
+			"url":"sound/IntroMusic.mp3"
+		},
+		{
+			"name":"LIGHTNING_MP3",
+			"type":"sound",
+			"url":"sound/Lightning.mp3"
+		},
+		{
+			"name":"LVUP_MP3",
+			"type":"sound",
+			"url":"sound/LvUp.mp3"
+		},
+		{
+			"name":"MAN_SHOUTING_MP3",
+			"type":"sound",
+			"url":"sound/Man_Shouting.mp3"
+		},
+		{
+			"name":"MONKEY_SHOUTING_MP3",
+			"type":"sound",
+			"url":"sound/Monkey_Shouting.mp3"
+		},
+		{
+			"name":"MOVE_MP3",
+			"type":"sound",
+			"url":"sound/Move.mp3"
+		},
+		{
+			"name":"POPUP_MP3",
+			"type":"sound",
+			"url":"sound/PopUp.mp3"
+		},
+		{
+			"name":"STORY_MP3",
+			"type":"sound",
+			"url":"sound/Story.mp3"
+		},
+		{
+			"name":"UPGRADE_MP3",
+			"type":"sound",
+			"url":"sound/Upgrade.mp3"
+		},
+		{
+			"name":"YEAH_MP3",
+			"type":"sound",
+			"url":"sound/Yeah.mp3"
+		},
+		{
+			"name":"BACKGROUND_MP3",
+			"type":"sound",
+			"url":"sound/Background.mp3"
+		},
+		{
+			"name":"BEHIT_MP3",
+			"type":"sound",
+			"url":"sound/BeHit.mp3"
+		},
+		{
+			"name":"BOOM_MP3",
+			"type":"sound",
+			"url":"sound/Boom.mp3"
+		},
+		{
+			"name":"BTN_MP3",
+			"type":"sound",
+			"url":"sound/Btn.mp3"
+		},
+		{
+			"name":"COIN_MP3",
+			"type":"sound",
+			"url":"sound/Coin.mp3"
+		},
+		{
+			"name":"CRITICAL_MP3",
+			"type":"sound",
+			"url":"sound/Critical.mp3"
 		}
 	]
 }

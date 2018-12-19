@@ -4,6 +4,8 @@
  */
 class UIUtils {
 
+    public static scene: Scene;
+
 	/**
 	 * color:number = 0x33CCFF;        /// 光晕的颜色，十六进制，不包含透明度
      * alpha:number = 0.8;             /// 光晕的颜色透明度，是对 color 参数的透明度设定。有效值为 0.0 到 1.0。例如，0.8 设置透明度值为 80%。
@@ -130,9 +132,9 @@ class UIUtils {
      * 矩形相交
      */
     public static hitTest(obj1: egret.DisplayObject, obj2: egret.DisplayObject): boolean {
-        var rect1: egret.Rectangle = new egret.Rectangle(obj1.x - obj1.anchorOffsetX , obj1.y - obj1.anchorOffsetY , obj1.width , obj1.height);
+        var rect1: egret.Rectangle = new egret.Rectangle(obj1.x - obj1.anchorOffsetX, obj1.y - obj1.anchorOffsetY, obj1.width, obj1.height);
         // rect1 = obj1.getBounds(rect1,true)
-        var rect2: egret.Rectangle = new egret.Rectangle(obj2.x - obj2.anchorOffsetX , obj2.y - obj2.anchorOffsetY , obj2.width , obj2.height);
+        var rect2: egret.Rectangle = new egret.Rectangle(obj2.x - obj2.anchorOffsetX, obj2.y - obj2.anchorOffsetY, obj2.width, obj2.height);
         // rect2 = obj2.getBounds(rect2,true)
         // rect1.x = obj1.x - obj1.width/2;
         // rect1.y = obj1.y - obj1.height/2;
@@ -156,4 +158,33 @@ class UIUtils {
         rect.y = obj.y - obj.anchorOffsetY;
         return rect;
     }
+
+    /**
+     * 显示BOSSTips
+     */
+    public static showBossTips() {
+        let tips: fairygui.main.UI_bossTips = <fairygui.main.UI_bossTips><any>fairygui.UIPackage.createObject("main", "bossTips");
+
+        tips.y = 150;
+
+        this.scene._scene.addChild(tips);
+
+        tips.effect.play(any => {
+            this.scene._scene.removeChild(tips);
+        });
+
+    }
+
+    // private static money: egret.Bitmap;
+
+    // /**
+    // * 播放飘金币/钻石动画
+    // */
+    // public static async showMove(name: string) {
+        
+    // }
+
+   
+
+
 }
