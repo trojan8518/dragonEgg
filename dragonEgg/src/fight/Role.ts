@@ -41,6 +41,10 @@ class Role extends egret.Sprite {
 	 */
 	public alive: boolean = true;
 
+	private _r_scaleX:number = 1;
+
+	private _r_scaleY:number = 1;
+
 	public constructor() {
 		super();
 
@@ -52,6 +56,14 @@ class Role extends egret.Sprite {
 
 	public get display(): dragonBones.EgretArmatureDisplay {
 		return this._display;
+	}
+
+	public set r_scaleX(value:number){
+		this._r_scaleX = value;
+	}
+
+	public set r_scaleY(value:number){
+		this._r_scaleY = value;
 	}
 
 	/**
@@ -140,6 +152,10 @@ class Role extends egret.Sprite {
 		this._display = Role.factory.buildArmatureDisplay('animation', this.lastName, this.lastName, this.lastName);
 
 		this.stopAnimation();
+
+		this.display.scaleX = this._r_scaleX;
+
+		this.display.scaleY = this._r_scaleY;
 
 		this.addChild(this._display);
 

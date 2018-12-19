@@ -4,11 +4,13 @@ module fairygui.main {
 
 	export class UI_scene extends fairygui.GComponent {
 
-		public boxBtn:fairygui.GComponent;
-		public heroBtn:fairygui.GComponent;
-		public shopBtn:fairygui.GComponent;
-		public createBtn:fairygui.GComponent;
-		public mergeBtn:fairygui.GComponent;
+		public attack:UI_attribute;
+		public defense:UI_attribute;
+		public helmet:UI_attribute;
+		public gold:UI_attribute;
+		public diamond:UI_attribute;
+		public level:fairygui.GTextField;
+		public operate:UI_operate;
 
 		public static URL:string = "ui://eclrvg1urbsc3s";
 
@@ -23,11 +25,13 @@ module fairygui.main {
 		protected constructFromXML(xml: any): void {
 			super.constructFromXML(xml);
 
-			this.boxBtn = <fairygui.GComponent><any>(this.getChild("boxBtn"));
-			this.heroBtn = <fairygui.GComponent><any>(this.getChild("heroBtn"));
-			this.shopBtn = <fairygui.GComponent><any>(this.getChild("shopBtn"));
-			this.createBtn = <fairygui.GComponent><any>(this.getChild("createBtn"));
-			this.mergeBtn = <fairygui.GComponent><any>(this.getChild("mergeBtn"));
+			this.attack = <UI_attribute><any>(this.getChild("attack"));
+			this.defense = <UI_attribute><any>(this.getChild("defense"));
+			this.helmet = <UI_attribute><any>(this.getChild("helmet"));
+			this.gold = <UI_attribute><any>(this.getChild("gold"));
+			this.diamond = <UI_attribute><any>(this.getChild("diamond"));
+			this.level = <fairygui.GTextField><any>(this.getChild("level"));
+			this.operate = <UI_operate><any>(this.getChild("operate"));
 		}
 	}
 }

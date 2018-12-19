@@ -1,82 +1,195 @@
 {
-	"groups": [
+	"groups":[
 		{
-			"keys": "bg_jpg,egret_icon_png,description_json",
-			"name": "preload"
+			"keys":"main,main_atlas0",
+			"name":"preload"
 		},
 		{
-			"keys": "role_0_tex_png,role_0_tex_json,role_0_ske_json",
-			"name": "role_0"
+			"keys":"role_0_tex_png,role_0_tex_json,role_0_ske_json",
+			"name":"role_0"
 		},
 		{
-			"keys": "monster_0_tex_png,monster_0_tex_json,monster_0_ske_json",
-			"name": "monster_0"
+			"keys":"monster_0_tex_png,monster_0_tex_json,monster_0_ske_json",
+			"name":"monster_0"
 		},
 		{
-			"keys": "pet_0_tex_png,pet_0_tex_json,pet_0_ske_json",
-			"name": "pet_0"
+			"keys":"pet_0_tex_png,pet_0_tex_json,pet_0_ske_json",
+			"name":"pet_0"
+		},
+		{
+			"keys":"bird_ske_json,bird_tex_json,bird_tex_png",
+			"name":"bird"
+		},
+		{
+			"keys":"lightning_8_png,lightning_9_png,lightning_10_png,lightning_11_png,lightning_12_png,lightning_13_png,lightning_14_png,lightning_15_png,lightning_16_png,lightning_1_png,lightning_2_png,lightning_3_png,lightning_4_png,lightning_5_png,lightning_6_png,lightning_7_png",
+			"name":"lightning"
 		}
 	],
-	"resources": [
+	"resources":[
 		{
-			"url": "assets/bg.jpg",
-			"type": "image",
-			"name": "bg_jpg"
+			"name":"bg_jpg",
+			"type":"image",
+			"url":"assets/bg.jpg"
 		},
 		{
-			"url": "assets/egret_icon.png",
-			"type": "image",
-			"name": "egret_icon_png"
+			"name":"egret_icon_png",
+			"type":"image",
+			"url":"assets/egret_icon.png"
 		},
 		{
-			"url": "config/description.json",
-			"type": "json",
-			"name": "description_json"
+			"name":"description_json",
+			"type":"json",
+			"url":"config/description.json"
 		},
 		{
-			"url": "db/monster_0/monster_0_tex.png",
-			"type": "image",
-			"name": "monster_0_tex_png"
+			"name":"monster_0_tex_png",
+			"type":"image",
+			"url":"db/monster_0/monster_0_tex.png"
 		},
 		{
-			"url": "db/monster_0/monster_0_ske.json",
-			"type": "json",
-			"name": "monster_0_ske_json"
+			"name":"monster_0_ske_json",
+			"type":"json",
+			"url":"db/monster_0/monster_0_ske.json"
 		},
 		{
-			"url": "db/monster_0/monster_0_tex.json",
-			"type": "json",
-			"name": "monster_0_tex_json"
+			"name":"monster_0_tex_json",
+			"type":"json",
+			"url":"db/monster_0/monster_0_tex.json"
 		},
 		{
-			"url": "db/pet_0/pet_0_tex.png",
-			"type": "image",
-			"name": "pet_0_tex_png"
+			"name":"pet_0_tex_png",
+			"type":"image",
+			"url":"db/pet_0/pet_0_tex.png"
 		},
 		{
-			"url": "db/pet_0/pet_0_ske.json",
-			"type": "json",
-			"name": "pet_0_ske_json"
+			"name":"pet_0_ske_json",
+			"type":"json",
+			"url":"db/pet_0/pet_0_ske.json"
 		},
 		{
-			"url": "db/pet_0/pet_0_tex.json",
-			"type": "json",
-			"name": "pet_0_tex_json"
+			"name":"pet_0_tex_json",
+			"type":"json",
+			"url":"db/pet_0/pet_0_tex.json"
 		},
 		{
-			"url": "db/role_0/role_0_tex.png",
-			"type": "image",
-			"name": "role_0_tex_png"
+			"name":"role_0_tex_png",
+			"type":"image",
+			"url":"db/role_0/role_0_tex.png"
 		},
 		{
-			"url": "db/role_0/role_0_tex.json",
-			"type": "json",
-			"name": "role_0_tex_json"
+			"name":"role_0_tex_json",
+			"type":"json",
+			"url":"db/role_0/role_0_tex.json"
 		},
 		{
-			"url": "db/role_0/role_0_ske.json",
-			"type": "json",
-			"name": "role_0_ske_json"
+			"name":"role_0_ske_json",
+			"type":"json",
+			"url":"db/role_0/role_0_ske.json"
+		},
+		{
+			"name":"main",
+			"type":"bin",
+			"url":"mainui/main.bin"
+		},
+		{
+			"name":"main_atlas0",
+			"type":"image",
+			"url":"mainui/main_atlas0.png"
+		},
+		{
+			"name":"bird_ske_json",
+			"type":"json",
+			"url":"db/bird/bird_ske.json"
+		},
+		{
+			"name":"bird_tex_json",
+			"type":"json",
+			"url":"db/bird/bird_tex.json"
+		},
+		{
+			"name":"bird_tex_png",
+			"type":"image",
+			"url":"db/bird/bird_tex.png"
+		},
+		{
+			"name":"lightning_8_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_8.png"
+		},
+		{
+			"name":"lightning_9_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_9.png"
+		},
+		{
+			"name":"lightning_10_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_10.png"
+		},
+		{
+			"name":"lightning_11_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_11.png"
+		},
+		{
+			"name":"lightning_12_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_12.png"
+		},
+		{
+			"name":"lightning_13_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_13.png"
+		},
+		{
+			"name":"lightning_14_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_14.png"
+		},
+		{
+			"name":"lightning_15_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_15.png"
+		},
+		{
+			"name":"lightning_16_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_16.png"
+		},
+		{
+			"name":"lightning_1_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_1.png"
+		},
+		{
+			"name":"lightning_2_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_2.png"
+		},
+		{
+			"name":"lightning_3_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_3.png"
+		},
+		{
+			"name":"lightning_4_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_4.png"
+		},
+		{
+			"name":"lightning_5_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_5.png"
+		},
+		{
+			"name":"lightning_6_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_6.png"
+		},
+		{
+			"name":"lightning_7_png",
+			"type":"image",
+			"url":"effect/lightning/lightning_7.png"
 		}
 	]
 }

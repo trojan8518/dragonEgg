@@ -64,6 +64,9 @@ class Main extends egret.DisplayObjectContainer {
 
     private async runGame() {
         await this.loadResource()
+
+        await fairygui.UIPackage.addPackage('main');
+
         this.createGameScene();
         const result = await RES.getResAsync("description_json")
         this.startAnimation(result);
@@ -97,15 +100,20 @@ class Main extends egret.DisplayObjectContainer {
 
         fightScene.walk_timeScale = 1;
 
-        fightScene.attack_timeScale = 2;
+        fightScene.attack_timeScale = 20;
 
         this.addChild(fightScene);
+
 
         fairygui.GRoot.inst.setSize(this.stage.stageWidth, this.stage.stageHeight);
 
         fairygui.main.mainBinder.bindAll();
 
         let scene:fairygui.main.UI_scene = <fairygui.main.UI_scene><any>fairygui.UIPackage.createObject("main", "scene");
+
+        scene.width = this.stage.stageWidth;
+
+        scene.height = this.stage.stageHeight;
 
         this.addChild(scene._container);
         

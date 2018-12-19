@@ -13,6 +13,10 @@ class FightScene extends egret.DisplayObjectContainer {
 
 	private pet: Role;
 
+	private bird: Role;
+
+	private shp: egret.Shape;
+
 	/**
 	 * 每一帧帧移动的距离
 	 */
@@ -22,10 +26,19 @@ class FightScene extends egret.DisplayObjectContainer {
 
 	private _pasue: boolean = false;
 
+	public static sceneH:number = 380;
+
 	/**
 	 * 击杀次数
 	 */
 	private _killTimes: number = 0;
+
+	/**
+	 * 地图背景序号
+	 */
+	private map_index: number = 0;
+
+	private lightningMC: ZRMovieClip;
 
 	public constructor(stage: egret.Stage) {
 		super();
@@ -42,11 +55,32 @@ class FightScene extends egret.DisplayObjectContainer {
 
 		this.pet = new Role();
 
+		this.bird = new Role();
+
+		this._bg_1 = new egret.Bitmap();
+
+		this._bg_2 = new egret.Bitmap();
+
+		this.shp = new egret.Shape();
+		this.shp.graphics.beginFill(0x000000, 1);
+		this.shp.graphics.drawRect(0, 0, this.width, this.height);
+		this.shp.graphics.endFill();
+
 		this._monterList = [];
 
+		this.loadBg();
+
+		this.createPet();
+
+		this.createRole();
+
+		this.createBird();
+	}
+
+	private loadBg() {
 		let bg = new egret.ImageLoader();
 		bg.addEventListener(egret.Event.COMPLETE, this.loadBg1Complete, this);
-		bg.load('resource/res/map_0.png');
+		bg.load('resource/res/map_' + this.map_index + '.png');
 	}
 
 	private loadBg1Complete(e: egret.Event) {
@@ -55,16 +89,16 @@ class FightScene extends egret.DisplayObjectContainer {
 		texture._setBitmapData(imageLoader.data);
 		this._textureH = texture.$bitmapHeight;
 		this._textureW = texture.$bitmapWidth;
-		this._bg_1 = new egret.Bitmap(texture);
+		this._bg_1.texture = texture;
 		this._bg_1.x = 0;
 		this._bg_1.y = 0;
-		this._bg_1.height = this._stage.stageHeight / FightSet.scale;
-		this._bg_1.width = this._stage.stageHeight / FightSet.scale / texture.$bitmapHeight * texture.$bitmapWidth;
-		this.addChild(this._bg_1);
+		this._bg_1.height =	FightScene.sceneH;
+		this._bg_1.width = FightScene.sceneH / texture.$bitmapHeight * texture.$bitmapWidth;
+		this.addChildAt(this._bg_1, 0);
 
 		let bg = new egret.ImageLoader();
 		bg.addEventListener(egret.Event.COMPLETE, this.loadBg2Complete, this);
-		bg.load('resource/res/map_0.png');
+		bg.load('resource/res/map_' + this.map_index + '.png');
 	}
 
 	private loadBg2Complete(e: egret.Event) {
@@ -73,20 +107,38 @@ class FightScene extends egret.DisplayObjectContainer {
 		texture._setBitmapData(imageLoader.data);
 		this._textureH = texture.$bitmapHeight;
 		this._textureW = texture.$bitmapWidth;
-		this._bg_2 = new egret.Bitmap(texture);
+		this._bg_2.texture = texture;
 		this._bg_2.x = this._bg_1.x + this._bg_1.width;
 		this._bg_2.y = 0;
-		this._bg_2.height = this._stage.stageHeight / FightSet.scale;
-		this._bg_2.width = this._stage.stageHeight / FightSet.scale / texture.$bitmapHeight * texture.$bitmapWidth;
-		this.addChild(this._bg_2);
-
-		this.createPet();
-
-		this.createRole();
+		this._bg_2.height = FightScene.sceneH;
+		this._bg_2.width = FightScene.sceneH / texture.$bitmapHeight * texture.$bitmapWidth;
+		this.addChildAt(this._bg_2, 1);
 
 		this.createMonster();
 
+		if (this.shp.parent)
+			this.removeChild(this.shp)
+
 		this._stage.addEventListener(egret.Event.ENTER_FRAME, this.enterFrameHandler, this)
+	}
+
+	/**
+	 * 播放闪电特效
+	 */
+	private showLightning() {
+		this.lightningMC = new ZRMovieClip('lightning', true, 50, 1, any => {
+
+		});
+
+		this.lightningMC.x = 420;
+
+		this.lightningMC.y = 0;
+
+		this.lightningMC.scaleY = 2;
+
+		this.lightningMC.scaleY = 3.6;
+
+		this.addChild(this.lightningMC)
 	}
 
 	private createRole() {
@@ -94,11 +146,11 @@ class FightScene extends egret.DisplayObjectContainer {
 
 		this.role.x = this._stage.stageWidth * 0.4;
 
-		this.role.y = this._stage.stageHeight / FightSet.scale * 0.9;
+		this.role.y = FightScene.sceneH * 0.9;
 
-		this.role.scaleX = 0.4;
+		this.role.r_scaleX = 0.4;
 
-		this.role.scaleY = 0.4;
+		this.role.r_scaleY = 0.4;
 
 		this.role.touchEnabled = false;
 
@@ -112,17 +164,62 @@ class FightScene extends egret.DisplayObjectContainer {
 
 		this.pet.x = this._stage.stageWidth * 0.15;
 
-		this.pet.y = this._stage.stageHeight / FightSet.scale * 0.9;
+		this.pet.y = FightScene.sceneH * 0.9;
 
-		this.pet.scaleX = -0.2;
+		this.pet.r_scaleX = -0.2;
 
-		this.pet.scaleY = 0.2;
+		this.pet.r_scaleY = 0.2;
 
 		this.pet.touchEnabled = false;
 
 		this.addChild(this.pet);
 
 		this.pet.playAnimation(AnmName.walk, 0)
+	}
+
+	private createBird() {
+		this.bird.updateData("bird");
+
+		this.bird.x = this._stage.stageWidth;
+
+		this.bird.y = FightScene.sceneH * 0.3;
+
+		this.bird.r_scaleX = -0.2;
+
+		this.bird.r_scaleY = 0.2;
+
+		this.bird.touchEnabled = false;
+
+		this.addChild(this.bird);
+
+		this.bird.x = this._stage.stageWidth + 100;
+
+		this.bird.y = 200;
+
+		this.bird.playAnimation(AnmName.walk, 0)
+
+		this.playCurveMove();
+	}
+
+	/**
+	 * 播放曲线动画
+	 */
+	public playCurveMove() {
+		let tw: egret.Tween = egret.Tween.get(this.bird, { loop: true });
+		tw.to({ x: -100, y: 200 }, 5000).call(this.overCurveMove, this);
+	}
+
+	private overCurveMove() {
+		// this.bird.dispose();
+
+		// this.createBird();
+	}
+
+	/**
+	 * 播放转场效果
+	 */
+	private transition() {
+		this.addChild(this.shp);
 	}
 
 	private createMonster() {
@@ -133,11 +230,11 @@ class FightScene extends egret.DisplayObjectContainer {
 
 			monster.x = 1280 + 1000 * i;
 
-			monster.y = this._stage.stageHeight / FightSet.scale * 0.9;
+			monster.y = FightScene.sceneH * 0.9;
 
-			monster.scaleX = -0.4;
+			monster.r_scaleX = -0.4;
 
-			monster.scaleY = 0.4;
+			monster.r_scaleY = 0.4;
 
 			monster.touchEnabled = false;
 
@@ -150,11 +247,11 @@ class FightScene extends egret.DisplayObjectContainer {
 	}
 
 	private reSizeHandler() {
-		this._bg_1.height = this._stage.stageHeight / FightSet.scale;
-		this._bg_1.width = this._stage.stageHeight / FightSet.scale / this._textureH * this._textureW;
+		// this._bg_1.height = this._stage.stageHeight / FightSet.scale;
+		// this._bg_1.width = this._stage.stageHeight / FightSet.scale / this._textureH * this._textureW;
 
-		this._bg_2.height = this._stage.stageHeight / FightSet.scale;
-		this._bg_2.width = this._stage.stageHeight / FightSet.scale / this._textureH * this._textureW;
+		// this._bg_2.height = this._stage.stageHeight / FightSet.scale;
+		// this._bg_2.width = this._stage.stageHeight / FightSet.scale / this._textureH * this._textureW;
 	}
 
 	/**
@@ -199,7 +296,11 @@ class FightScene extends egret.DisplayObjectContainer {
 				if (monster.x - this.role.x < 200) {//播放战斗过程
 					this._pasue = true;
 
-					await this.attack(2, monster)
+					// UIUtils.showBird(this,this.stage)
+
+					this.showLightning();
+
+					await this.attack(5, monster);
 
 					break;
 				}
@@ -212,6 +313,12 @@ class FightScene extends egret.DisplayObjectContainer {
 	private async attack(attackTimes: number, monster: Role) {
 		this.pet.playAnimation(AnmName.steady, 0);
 		await this.role.playAnimation(AnmName.attack, 1, async any => {
+			let tips = new HurtTips('123.B', this);
+
+			tips._view.x = this._stage.stageWidth * 0.6;
+
+			tips._view.y = FightScene.sceneH * 0.5;
+
 			await monster.playAnimation(AnmName.hit, 1, async any => {
 				this._atttackTimes++;
 
@@ -223,22 +330,54 @@ class FightScene extends egret.DisplayObjectContainer {
 
 					this._killTimes++;
 
-					if (this._killTimes >= 10) {
+					if (this._killTimes >= 10) {//下一关
+						this._stage.removeEventListener(egret.Event.ENTER_FRAME, this.enterFrameHandler, this)
 
+						this.transition();
+
+						this.clearMonster();
+
+						if (this.map_index == 0)
+							this.map_index = 1;
+						else if (this.map_index == 1)
+							this.map_index = 0;
+
+						this.loadBg();
+
+						// this._pasue = false;
+
+						// this.pet.playAnimation(AnmName.walk, 0);
+
+						// this.role.playAnimation(AnmName.walk, 0)
+
+						// this._atttackTimes = 0;
 					} else {
 						monster.alive = false;
-
-						this._pasue = false;
-
-						this.pet.playAnimation(AnmName.walk, 0);
-
-						this.role.playAnimation(AnmName.walk, 0)
-
-						this._atttackTimes = 0;
 					}
+
+					this._killTimes = 0;
+
+					this._pasue = false;
+
+					this.pet.playAnimation(AnmName.walk, 0);
+
+					this.role.playAnimation(AnmName.walk, 0)
+
+					this._atttackTimes = 0;
 				}
 			});
 		});
+	}
+
+	/**
+	 * 清除场景所有怪物
+	 */
+	private clearMonster() {
+		for (let i = this._monterList.length - 1; i >= 0; i--) {
+			this._monterList[i].dispose();
+
+			this._monterList.splice(i, 1);
+		}
 	}
 
 	public set walk_timeScale(value) {
@@ -270,11 +409,4 @@ class FightScene extends egret.DisplayObjectContainer {
 			this.pet.display.animation.timeScale = value;
 		}
 	}
-}
-
-class FightSet {
-	/**
-		 * stage与战斗场景背景图的高度比例
-		 */
-	public static scale: number = 3;
 }
