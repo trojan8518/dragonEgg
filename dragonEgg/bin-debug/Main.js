@@ -165,7 +165,7 @@ var Main = (function (_super) {
         scene.height = this.stage.stageHeight;
         this.addChild(scene._container);
         UIUtils.scene = new Scene(scene);
-        SoundUtils.play(SoundType.BG, 0);
+        SoundUtils.play(SoundType.BACKGROUND, 0);
     };
     /**
      * 根据name关键字创建一个Bitmap对象。name属性请参考resources/resource.json配置文件的内容。

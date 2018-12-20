@@ -15,6 +15,7 @@ var fairygui;
                 fairygui.UIObjectFactory.setPackageItemExtension(main.UI_bossTips.URL, main.UI_bossTips);
                 fairygui.UIObjectFactory.setPackageItemExtension(main.UI_critTip.URL, main.UI_critTip);
                 fairygui.UIObjectFactory.setPackageItemExtension(main.UI_critTips.URL, main.UI_critTips);
+                fairygui.UIObjectFactory.setPackageItemExtension(main.UI_hpBar.URL, main.UI_hpBar);
                 fairygui.UIObjectFactory.setPackageItemExtension(main.UI_tip.URL, main.UI_tip);
                 fairygui.UIObjectFactory.setPackageItemExtension(main.UI_hurtTips.URL, main.UI_hurtTips);
                 fairygui.UIObjectFactory.setPackageItemExtension(main.UI_bottom.URL, main.UI_bottom);

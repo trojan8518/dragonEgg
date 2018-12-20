@@ -144,9 +144,9 @@ class FightScene extends egret.DisplayObjectContainer {
 	private createRole() {
 		this.role.updateData("role_0");
 
-		this.role.r_scaleX = 0.4;
+		this.role.r_scaleX = 0.8;
 
-		this.role.r_scaleY = 0.4;
+		this.role.r_scaleY = 0.8;
 
 		this.role.x = this._stage.stageWidth * 0.4;
 
@@ -180,9 +180,9 @@ class FightScene extends egret.DisplayObjectContainer {
 	private createBird() {
 		this.bird.updateData("bird");
 
-		this.bird.r_scaleX = -0.2;
+		this.bird.r_scaleX = -0.4;
 
-		this.bird.r_scaleY = 0.2;
+		this.bird.r_scaleY = 0.4;
 
 		this.bird.x = this._stage.stageWidth;
 
@@ -226,9 +226,9 @@ class FightScene extends egret.DisplayObjectContainer {
 		for (let i = 9; i >= 0; i--) {
 			let monster: Role = new Role();
 
-			monster.r_scaleX = -0.4;
+			monster.r_scaleX = -0.8;
 
-			monster.r_scaleY = 0.4;
+			monster.r_scaleY = 0.8;
 
 			monster.updateData("monster_0");
 

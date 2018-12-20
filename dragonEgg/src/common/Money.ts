@@ -66,6 +66,8 @@ class Money extends egret.Sprite {
 		} else if (this._name == 'diamond') {
 			GameModel.inst.updateData(DataType.DIAMOND,this.num)
 		}
+
+		SoundUtils.play(SoundType.COIN,1)
 	}
 
 }

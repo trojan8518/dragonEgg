@@ -62,6 +62,9 @@ class ZRMovieClip extends egret.Sprite {
 		this._timer.repeatCount = RES.getGroupByName(this._groupName).length * this._repeateCount;
 
 		this.play();
+
+		if(this._groupName == 'lightning')
+			SoundUtils.play(SoundType.LIGHTNING,1);
 	}
 
 	/**

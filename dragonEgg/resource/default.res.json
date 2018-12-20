@@ -1,305 +1,295 @@
 {
-	"groups":[
+	"groups": [
 		{
-			"keys":"main,main_atlas0,diamond,gold,DIEBOOM_MP3,ERROR_MP3,GIRL_SHOUTING_MP3,HAMMER_MP3,INTROMUSIC_MP3,LIGHTNING_MP3,LVUP_MP3,MAN_SHOUTING_MP3,MONKEY_SHOUTING_MP3,MOVE_MP3,POPUP_MP3,STORY_MP3,UPGRADE_MP3,YEAH_MP3,BACKGROUND_MP3,BEHIT_MP3,BOOM_MP3,BTN_MP3,COIN_MP3,CRITICAL_MP3",
-			"name":"preload"
+			"keys": "main,main_atlas0,diamond,gold,DIEBOOM_MP3,ERROR_MP3,GIRL_SHOUTING_MP3,HAMMER_MP3,INTROMUSIC_MP3,LIGHTNING_MP3,LVUP_MP3,MAN_SHOUTING_MP3,MONKEY_SHOUTING_MP3,MOVE_MP3,POPUP_MP3,STORY_MP3,UPGRADE_MP3,YEAH_MP3,BACKGROUND_MP3,BEHIT_MP3,BOOM_MP3,BTN_MP3,COIN_MP3,CRITICAL_MP3",
+			"name": "preload"
 		},
 		{
-			"keys":"role_0_tex_png,role_0_tex_json,role_0_ske_json",
-			"name":"role_0"
+			"keys": "role_0_tex_png,role_0_tex_json,role_0_ske_json",
+			"name": "role_0"
 		},
 		{
-			"keys":"monster_0_tex_png,monster_0_tex_json,monster_0_ske_json",
-			"name":"monster_0"
+			"keys": "monster_0_tex_png,monster_0_tex_json,monster_0_ske_json",
+			"name": "monster_0"
 		},
 		{
-			"keys":"pet_0_tex_png,pet_0_tex_json,pet_0_ske_json",
-			"name":"pet_0"
+			"keys": "pet_0_tex_png,pet_0_tex_json,pet_0_ske_json",
+			"name": "pet_0"
 		},
 		{
-			"keys":"bird_ske_json,bird_tex_json,bird_tex_png",
-			"name":"bird"
+			"keys": "bird_ske_json,bird_tex_json,bird_tex_png",
+			"name": "bird"
 		},
 		{
-			"keys":"lightning_8_png,lightning_9_png,lightning_10_png,lightning_11_png,lightning_12_png,lightning_13_png,lightning_14_png,lightning_15_png,lightning_16_png,lightning_1_png,lightning_2_png,lightning_3_png,lightning_4_png,lightning_5_png,lightning_6_png,lightning_7_png",
-			"name":"lightning"
+			"keys": "lightning_8_png,lightning_9_png,lightning_10_png,lightning_11_png,lightning_12_png,lightning_13_png,lightning_14_png,lightning_15_png,lightning_16_png,lightning_1_png,lightning_2_png,lightning_3_png,lightning_4_png,lightning_5_png,lightning_6_png,lightning_7_png",
+			"name": "lightning"
 		}
 	],
-	"resources":[
+	"resources": [
 		{
-			"name":"bg_jpg",
-			"type":"image",
-			"url":"assets/bg.jpg"
+			"url": "config/description.json",
+			"type": "json",
+			"name": "description_json"
 		},
 		{
-			"name":"egret_icon_png",
-			"type":"image",
-			"url":"assets/egret_icon.png"
+			"url": "db/monster_0/monster_0_tex.png",
+			"type": "image",
+			"name": "monster_0_tex_png"
 		},
 		{
-			"name":"description_json",
-			"type":"json",
-			"url":"config/description.json"
+			"url": "db/monster_0/monster_0_ske.json",
+			"type": "json",
+			"name": "monster_0_ske_json"
 		},
 		{
-			"name":"monster_0_tex_png",
-			"type":"image",
-			"url":"db/monster_0/monster_0_tex.png"
+			"url": "db/monster_0/monster_0_tex.json",
+			"type": "json",
+			"name": "monster_0_tex_json"
 		},
 		{
-			"name":"monster_0_ske_json",
-			"type":"json",
-			"url":"db/monster_0/monster_0_ske.json"
+			"url": "db/pet_0/pet_0_tex.png",
+			"type": "image",
+			"name": "pet_0_tex_png"
 		},
 		{
-			"name":"monster_0_tex_json",
-			"type":"json",
-			"url":"db/monster_0/monster_0_tex.json"
+			"url": "db/pet_0/pet_0_ske.json",
+			"type": "json",
+			"name": "pet_0_ske_json"
 		},
 		{
-			"name":"pet_0_tex_png",
-			"type":"image",
-			"url":"db/pet_0/pet_0_tex.png"
+			"url": "db/pet_0/pet_0_tex.json",
+			"type": "json",
+			"name": "pet_0_tex_json"
 		},
 		{
-			"name":"pet_0_ske_json",
-			"type":"json",
-			"url":"db/pet_0/pet_0_ske.json"
+			"url": "db/role_0/role_0_tex.png",
+			"type": "image",
+			"name": "role_0_tex_png"
 		},
 		{
-			"name":"pet_0_tex_json",
-			"type":"json",
-			"url":"db/pet_0/pet_0_tex.json"
+			"url": "db/role_0/role_0_tex.json",
+			"type": "json",
+			"name": "role_0_tex_json"
 		},
 		{
-			"name":"role_0_tex_png",
-			"type":"image",
-			"url":"db/role_0/role_0_tex.png"
+			"url": "db/role_0/role_0_ske.json",
+			"type": "json",
+			"name": "role_0_ske_json"
 		},
 		{
-			"name":"role_0_tex_json",
-			"type":"json",
-			"url":"db/role_0/role_0_tex.json"
+			"url": "mainui/main.bin",
+			"type": "bin",
+			"name": "main"
 		},
 		{
-			"name":"role_0_ske_json",
-			"type":"json",
-			"url":"db/role_0/role_0_ske.json"
+			"url": "mainui/main_atlas0.png",
+			"type": "image",
+			"name": "main_atlas0"
 		},
 		{
-			"name":"main",
-			"type":"bin",
-			"url":"mainui/main.bin"
+			"url": "db/bird/bird_ske.json",
+			"type": "json",
+			"name": "bird_ske_json"
 		},
 		{
-			"name":"main_atlas0",
-			"type":"image",
-			"url":"mainui/main_atlas0.png"
+			"url": "db/bird/bird_tex.json",
+			"type": "json",
+			"name": "bird_tex_json"
 		},
 		{
-			"name":"bird_ske_json",
-			"type":"json",
-			"url":"db/bird/bird_ske.json"
+			"url": "db/bird/bird_tex.png",
+			"type": "image",
+			"name": "bird_tex_png"
 		},
 		{
-			"name":"bird_tex_json",
-			"type":"json",
-			"url":"db/bird/bird_tex.json"
+			"url": "effect/lightning/lightning_8.png",
+			"type": "image",
+			"name": "lightning_8_png"
 		},
 		{
-			"name":"bird_tex_png",
-			"type":"image",
-			"url":"db/bird/bird_tex.png"
+			"url": "effect/lightning/lightning_9.png",
+			"type": "image",
+			"name": "lightning_9_png"
 		},
 		{
-			"name":"lightning_8_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_8.png"
+			"url": "effect/lightning/lightning_10.png",
+			"type": "image",
+			"name": "lightning_10_png"
 		},
 		{
-			"name":"lightning_9_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_9.png"
+			"url": "effect/lightning/lightning_11.png",
+			"type": "image",
+			"name": "lightning_11_png"
 		},
 		{
-			"name":"lightning_10_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_10.png"
+			"url": "effect/lightning/lightning_12.png",
+			"type": "image",
+			"name": "lightning_12_png"
 		},
 		{
-			"name":"lightning_11_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_11.png"
+			"url": "effect/lightning/lightning_13.png",
+			"type": "image",
+			"name": "lightning_13_png"
 		},
 		{
-			"name":"lightning_12_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_12.png"
+			"url": "effect/lightning/lightning_14.png",
+			"type": "image",
+			"name": "lightning_14_png"
 		},
 		{
-			"name":"lightning_13_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_13.png"
+			"url": "effect/lightning/lightning_15.png",
+			"type": "image",
+			"name": "lightning_15_png"
 		},
 		{
-			"name":"lightning_14_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_14.png"
+			"url": "effect/lightning/lightning_16.png",
+			"type": "image",
+			"name": "lightning_16_png"
 		},
 		{
-			"name":"lightning_15_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_15.png"
+			"url": "effect/lightning/lightning_1.png",
+			"type": "image",
+			"name": "lightning_1_png"
 		},
 		{
-			"name":"lightning_16_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_16.png"
+			"url": "effect/lightning/lightning_2.png",
+			"type": "image",
+			"name": "lightning_2_png"
 		},
 		{
-			"name":"lightning_1_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_1.png"
+			"url": "effect/lightning/lightning_3.png",
+			"type": "image",
+			"name": "lightning_3_png"
 		},
 		{
-			"name":"lightning_2_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_2.png"
+			"url": "effect/lightning/lightning_4.png",
+			"type": "image",
+			"name": "lightning_4_png"
 		},
 		{
-			"name":"lightning_3_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_3.png"
+			"url": "effect/lightning/lightning_5.png",
+			"type": "image",
+			"name": "lightning_5_png"
 		},
 		{
-			"name":"lightning_4_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_4.png"
+			"url": "effect/lightning/lightning_6.png",
+			"type": "image",
+			"name": "lightning_6_png"
 		},
 		{
-			"name":"lightning_5_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_5.png"
+			"url": "effect/lightning/lightning_7.png",
+			"type": "image",
+			"name": "lightning_7_png"
 		},
 		{
-			"name":"lightning_6_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_6.png"
+			"url": "icon/diamond.png",
+			"type": "image",
+			"name": "diamond"
 		},
 		{
-			"name":"lightning_7_png",
-			"type":"image",
-			"url":"effect/lightning/lightning_7.png"
+			"url": "icon/gold.png",
+			"type": "image",
+			"name": "gold"
 		},
 		{
-			"name":"diamond",
-			"type":"image",
-			"url":"icon/diamond.png"
+			"url": "sound/DieBoom.mp3",
+			"type": "sound",
+			"name": "DIEBOOM_MP3"
 		},
 		{
-			"name":"gold",
-			"type":"image",
-			"url":"icon/gold.png"
+			"url": "sound/Error.mp3",
+			"type": "sound",
+			"name": "ERROR_MP3"
 		},
 		{
-			"name":"DIEBOOM_MP3",
-			"type":"sound",
-			"url":"sound/DieBoom.mp3"
+			"url": "sound/Girl_Shouting.mp3",
+			"type": "sound",
+			"name": "GIRL_SHOUTING_MP3"
 		},
 		{
-			"name":"ERROR_MP3",
-			"type":"sound",
-			"url":"sound/Error.mp3"
+			"url": "sound/Hammer.mp3",
+			"type": "sound",
+			"name": "HAMMER_MP3"
 		},
 		{
-			"name":"GIRL_SHOUTING_MP3",
-			"type":"sound",
-			"url":"sound/Girl_Shouting.mp3"
+			"url": "sound/IntroMusic.mp3",
+			"type": "sound",
+			"name": "INTROMUSIC_MP3"
 		},
 		{
-			"name":"HAMMER_MP3",
-			"type":"sound",
-			"url":"sound/Hammer.mp3"
+			"url": "sound/Lightning.mp3",
+			"type": "sound",
+			"name": "LIGHTNING_MP3"
 		},
 		{
-			"name":"INTROMUSIC_MP3",
-			"type":"sound",
-			"url":"sound/IntroMusic.mp3"
+			"url": "sound/LvUp.mp3",
+			"type": "sound",
+			"name": "LVUP_MP3"
 		},
 		{
-			"name":"LIGHTNING_MP3",
-			"type":"sound",
-			"url":"sound/Lightning.mp3"
+			"url": "sound/Man_Shouting.mp3",
+			"type": "sound",
+			"name": "MAN_SHOUTING_MP3"
 		},
 		{
-			"name":"LVUP_MP3",
-			"type":"sound",
-			"url":"sound/LvUp.mp3"
+			"url": "sound/Monkey_Shouting.mp3",
+			"type": "sound",
+			"name": "MONKEY_SHOUTING_MP3"
 		},
 		{
-			"name":"MAN_SHOUTING_MP3",
-			"type":"sound",
-			"url":"sound/Man_Shouting.mp3"
+			"url": "sound/Move.mp3",
+			"type": "sound",
+			"name": "MOVE_MP3"
 		},
 		{
-			"name":"MONKEY_SHOUTING_MP3",
-			"type":"sound",
-			"url":"sound/Monkey_Shouting.mp3"
+			"url": "sound/PopUp.mp3",
+			"type": "sound",
+			"name": "POPUP_MP3"
 		},
 		{
-			"name":"MOVE_MP3",
-			"type":"sound",
-			"url":"sound/Move.mp3"
+			"url": "sound/Story.mp3",
+			"type": "sound",
+			"name": "STORY_MP3"
 		},
 		{
-			"name":"POPUP_MP3",
-			"type":"sound",
-			"url":"sound/PopUp.mp3"
+			"url": "sound/Upgrade.mp3",
+			"type": "sound",
+			"name": "UPGRADE_MP3"
 		},
 		{
-			"name":"STORY_MP3",
-			"type":"sound",
-			"url":"sound/Story.mp3"
+			"url": "sound/Yeah.mp3",
+			"type": "sound",
+			"name": "YEAH_MP3"
 		},
 		{
-			"name":"UPGRADE_MP3",
-			"type":"sound",
-			"url":"sound/Upgrade.mp3"
+			"url": "sound/Background.mp3",
+			"type": "sound",
+			"name": "BACKGROUND_MP3"
 		},
 		{
-			"name":"YEAH_MP3",
-			"type":"sound",
-			"url":"sound/Yeah.mp3"
+			"url": "sound/BeHit.mp3",
+			"type": "sound",
+			"name": "BEHIT_MP3"
 		},
 		{
-			"name":"BACKGROUND_MP3",
-			"type":"sound",
-			"url":"sound/Background.mp3"
+			"url": "sound/Boom.mp3",
+			"type": "sound",
+			"name": "BOOM_MP3"
 		},
 		{
-			"name":"BEHIT_MP3",
-			"type":"sound",
-			"url":"sound/BeHit.mp3"
+			"url": "sound/Btn.mp3",
+			"type": "sound",
+			"name": "BTN_MP3"
 		},
 		{
-			"name":"BOOM_MP3",
-			"type":"sound",
-			"url":"sound/Boom.mp3"
+			"url": "sound/Coin.mp3",
+			"type": "sound",
+			"name": "COIN_MP3"
 		},
 		{
-			"name":"BTN_MP3",
-			"type":"sound",
-			"url":"sound/Btn.mp3"
-		},
-		{
-			"name":"COIN_MP3",
-			"type":"sound",
-			"url":"sound/Coin.mp3"
-		},
-		{
-			"name":"CRITICAL_MP3",
-			"type":"sound",
-			"url":"sound/Critical.mp3"
+			"url": "sound/Critical.mp3",
+			"type": "sound",
+			"name": "CRITICAL_MP3"
 		}
 	]
 }

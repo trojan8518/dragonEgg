@@ -120,7 +120,7 @@ class Main extends egret.DisplayObjectContainer {
 
         UIUtils.scene = new Scene(scene);
 
-        SoundUtils.play(SoundType.BG,0);
+        SoundUtils.play(SoundType.BACKGROUND,0);
     }
 
     /**

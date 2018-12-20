@@ -9,6 +9,7 @@ module fairygui.main {
 			fairygui.UIObjectFactory.setPackageItemExtension(UI_bossTips.URL, UI_bossTips);
 			fairygui.UIObjectFactory.setPackageItemExtension(UI_critTip.URL, UI_critTip);
 			fairygui.UIObjectFactory.setPackageItemExtension(UI_critTips.URL, UI_critTips);
+			fairygui.UIObjectFactory.setPackageItemExtension(UI_hpBar.URL, UI_hpBar);
 			fairygui.UIObjectFactory.setPackageItemExtension(UI_tip.URL, UI_tip);
 			fairygui.UIObjectFactory.setPackageItemExtension(UI_hurtTips.URL, UI_hurtTips);
 			fairygui.UIObjectFactory.setPackageItemExtension(UI_bottom.URL, UI_bottom);

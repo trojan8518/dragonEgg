@@ -30,6 +30,8 @@ var fairygui;
                 this.gold = (this.getChild("gold"));
                 this.diamond = (this.getChild("diamond"));
                 this.operate = (this.getChild("operate"));
+                this.role_hpBar = (this.getChild("role_hpBar"));
+                this.boss_hpBar = (this.getChild("boss_hpBar"));
             };
             UI_scene.URL = "ui://eclrvg1urbsc3s";
             return UI_scene;

@@ -45,6 +45,8 @@ class Role extends egret.Sprite {
 
 	private _r_scaleY: number = 1;
 
+	private _hpBar: fairygui.main.UI_hpBar;
+
 	public constructor() {
 		super();
 
@@ -52,6 +54,25 @@ class Role extends egret.Sprite {
 			Role.factory = dragonBones.EgretFactory.factory;
 			Role.armatureConfig = new Map<string, boolean>();
 		}
+	}
+
+	/**
+	 * 创建血条
+	 */
+	private createHpBar() {
+		if (this._hpBar) return;
+
+		this._hpBar = <fairygui.main.UI_hpBar><any>fairygui.UIPackage.createObject("main", "hpBar");
+
+		if(this._r_scaleX > 0)
+		this._hpBar.x = this._hpBar.width >> 1;
+		else if(this._r_scaleX < 0)
+		this._hpBar.x = - this._hpBar.width >> 1;
+
+		this._hpBar.y = - this.display.height * this._r_scaleY * 0.8 ;
+		// this._hpBar.y = -100;
+
+		this.addChild(this._hpBar._container);
 	}
 
 	public get display(): dragonBones.EgretArmatureDisplay {
@@ -159,6 +180,10 @@ class Role extends egret.Sprite {
 
 		this.addChild(this._display);
 
+		if (this.lastName.indexOf('monster') != -1) {
+			this.createHpBar();
+		}
+
 		if (this.needWaitPlay) {
 			if (this._display.armature.animation.hasAnimation(this.needWaitPlay.name)) {
 				this.playAnm(this.needWaitPlay.name, this.needWaitPlay.playTimes)
@@ -205,6 +230,8 @@ class Role extends egret.Sprite {
 	private playAnm(name, playTimes) {
 		if (name == AnmName.walk) {
 			SoundUtils.play(SoundType.MOVE, 0)
+		} else if (name == AnmName.hit) {
+			SoundUtils.play(SoundType.BEHIT, 1)
 		} else {
 			SoundUtils.stop(SoundType.MOVE)
 		}

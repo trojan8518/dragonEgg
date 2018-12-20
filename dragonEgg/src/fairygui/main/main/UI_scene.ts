@@ -11,6 +11,9 @@ module fairygui.main {
 		public gold:UI_attribute;
 		public diamond:UI_attribute;
 		public operate:UI_operate;
+		public role_hpBar:UI_hpBar;
+		public boss_hpBar:UI_hpBar;
+		public table:fairygui.GProgressBar;
 
 		public static URL:string = "ui://eclrvg1urbsc3s";
 
@@ -32,6 +35,9 @@ module fairygui.main {
 			this.gold = <UI_attribute><any>(this.getChild("gold"));
 			this.diamond = <UI_attribute><any>(this.getChild("diamond"));
 			this.operate = <UI_operate><any>(this.getChild("operate"));
+			this.role_hpBar = <UI_hpBar><any>(this.getChild("role_hpBar"));
+			this.boss_hpBar = <UI_hpBar><any>(this.getChild("boss_hpBar"));
+			this.table = <fairygui.GProgressBar><any>(this.getChild("table"));
 		}
 	}
 }

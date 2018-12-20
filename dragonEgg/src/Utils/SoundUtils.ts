@@ -36,7 +36,7 @@ class SoundUtils {
 			this.soundChannelMap = new Map<string, egret.SoundChannel>();
 
 		let bgType = "bg";//2个bgm随机
-		this.soundMap.set(SoundType.BG, RES.getRes(SoundType.BG + '_MP3'));
+		this.soundMap.set(SoundType.BACKGROUND, RES.getRes(SoundType.BACKGROUND + '_MP3'));
 		this.soundMap.set(SoundType.BEHIT, RES.getRes(SoundType.BEHIT + '_MP3'));
 		this.soundMap.set(SoundType.BOOM, RES.getRes(SoundType.BOOM + '_MP3'));
 		this.soundMap.set(SoundType.BTN, RES.getRes(SoundType.BTN + '_MP3'));
@@ -60,11 +60,11 @@ class SoundUtils {
 
 		egret.lifecycle.onPause = () => {
 			// this.soundMap.get(SoundType.BG).stop();
-			this.soundChannelMap.delete(SoundType.BG)
+			this.soundChannelMap.delete(SoundType.BACKGROUND)
 			egret.ticker.pause();   // 关闭渲染和心跳
 		}
 		egret.lifecycle.onResume = () => {
-			this.play(SoundType.BG, 0);
+			this.play(SoundType.BACKGROUND, 0);
 
 			egret.ticker.resume();  // 打开渲染和心跳
 		}
@@ -124,8 +124,8 @@ class SoundUtils {
 	public static set bg_sound_volume(value: number) {
 		this._bg_sound_volume = value;
 
-		if (this.soundChannelMap && this.soundChannelMap.get(SoundType.BG)) {
-			this.soundChannelMap.get(SoundType.BG).volume = 0.01 * value;
+		if (this.soundChannelMap && this.soundChannelMap.get(SoundType.BACKGROUND)) {
+			this.soundChannelMap.get(SoundType.BACKGROUND).volume = 0.01 * value;
 
 			// this.soundChannelMap.get(SoundType.BG).stop();
 		}
@@ -159,7 +159,7 @@ class SoundType {
 	/** 
 	 * 背景音樂
 	*/
-	public static BG: string = "BG";
+	public static BACKGROUND: string = "BACKGROUND";
 
 	/** 
 	 * 背景音樂

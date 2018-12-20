@@ -134,8 +134,8 @@ var FightScene = (function (_super) {
     };
     FightScene.prototype.createRole = function () {
         this.role.updateData("role_0");
-        this.role.r_scaleX = 0.4;
-        this.role.r_scaleY = 0.4;
+        this.role.r_scaleX = 0.8;
+        this.role.r_scaleY = 0.8;
         this.role.x = this._stage.stageWidth * 0.4;
         this.role.y = FightScene.sceneH * 0.9;
         this.role.touchEnabled = false;
@@ -154,8 +154,8 @@ var FightScene = (function (_super) {
     };
     FightScene.prototype.createBird = function () {
         this.bird.updateData("bird");
-        this.bird.r_scaleX = -0.2;
-        this.bird.r_scaleY = 0.2;
+        this.bird.r_scaleX = -0.4;
+        this.bird.r_scaleY = 0.4;
         this.bird.x = this._stage.stageWidth;
         this.bird.y = FightScene.sceneH * 0.3;
         this.bird.touchEnabled = false;
@@ -185,8 +185,8 @@ var FightScene = (function (_super) {
     FightScene.prototype.createMonster = function () {
         for (var i = 9; i >= 0; i--) {
             var monster = new Role();
-            monster.r_scaleX = -0.4;
-            monster.r_scaleY = 0.4;
+            monster.r_scaleX = -0.8;
+            monster.r_scaleY = 0.8;
             monster.updateData("monster_0");
             monster.x = 1280 + 1000 * i;
             monster.y = FightScene.sceneH * 0.9;

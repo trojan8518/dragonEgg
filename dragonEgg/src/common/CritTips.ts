@@ -13,6 +13,8 @@ class CritTips {
 
 		parent.addChild(this._view._container);
 
+		SoundUtils.play(SoundType.CRITICAL,1);
+		
 		this._view.show.play(any=>{
 			parent.removeChild(this._view._container);
 		});
