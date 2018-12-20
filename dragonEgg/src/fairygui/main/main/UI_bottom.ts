@@ -7,6 +7,7 @@ module fairygui.main {
 		public boxBtn:fairygui.GComponent;
 		public heroBtn:fairygui.GComponent;
 		public shopBtn:fairygui.GComponent;
+		public table:fairygui.GProgressBar;
 		public createBtn:fairygui.GComponent;
 		public mergeBtn:fairygui.GComponent;
 
@@ -26,6 +27,7 @@ module fairygui.main {
 			this.boxBtn = <fairygui.GComponent><any>(this.getChild("boxBtn"));
 			this.heroBtn = <fairygui.GComponent><any>(this.getChild("heroBtn"));
 			this.shopBtn = <fairygui.GComponent><any>(this.getChild("shopBtn"));
+			this.table = <fairygui.GProgressBar><any>(this.getChild("table"));
 			this.createBtn = <fairygui.GComponent><any>(this.getChild("createBtn"));
 			this.mergeBtn = <fairygui.GComponent><any>(this.getChild("mergeBtn"));
 		}
